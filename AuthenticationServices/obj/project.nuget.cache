@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "KvP6rU+TX9I=",
+  "success": true,
+  "projectFilePath": "/Users/bastienbourgeat/Repository/EFREI_TP/S3/dotNet/Projet/BlazorGameQuest_BOURGEAT_CARAUX_LSI1/AuthenticationServices/AuthenticationServices.csproj",
+  "expectedPackageFiles": [
+    "/Users/bastienbourgeat/.nuget/packages/microsoft.aspnetcore.openapi/9.0.8/microsoft.aspnetcore.openapi.9.0.8.nupkg.sha512",
+    "/Users/bastienbourgeat/.nuget/packages/microsoft.openapi/1.6.17/microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}
