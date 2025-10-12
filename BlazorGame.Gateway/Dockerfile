@@ -18,7 +18,7 @@ COPY SharedModels/ ./SharedModels/
 
 # Exposition du port
 WORKDIR /app/BlazorGame.Gateway
-EXPOSE 80
+EXPOSE 5001
 
 # Lancement de l'application en mode développement
-CMD ["dotnet", "run", "--urls", "http://0.0.0.0:80"]
+CMD ["dotnet", "run", "--urls", "http://0.0.0.0:5001"]

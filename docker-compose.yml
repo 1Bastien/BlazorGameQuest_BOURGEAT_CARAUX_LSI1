@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: BlazorGame.Client/Dockerfile
     ports:
-      - "3000:80" # Port exposé pour le frontend
+      - "5000:5000" # Port exposé pour le frontend
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
 
@@ -15,7 +15,7 @@ services:
       context: .
       dockerfile: BlazorGame.Gateway/Dockerfile
     ports:
-      - "3001:80" # Port exposé pour la gateway
+      - "5001:5001" # Port exposé pour la gateway
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     depends_on:

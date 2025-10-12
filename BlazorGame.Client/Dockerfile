@@ -30,7 +30,7 @@ WORKDIR /src/BlazorGame.Client
 RUN dotnet restore
 
 # Exposition du port
-EXPOSE 80
+EXPOSE 5000
 
 # Lancement de l'application en mode développement
-CMD ["dotnet", "run", "--urls", "http://0.0.0.0:80"]
+CMD ["dotnet", "run", "--urls", "http://0.0.0.0:5000"]
