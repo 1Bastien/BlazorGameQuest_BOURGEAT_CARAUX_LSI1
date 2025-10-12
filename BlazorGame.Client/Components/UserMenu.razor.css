@@ -1,0 +1,34 @@
+.user-menu {
+    background-color: rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 100%;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-menu button {
+    color: white;
+    opacity: 0.8;
+    transition: opacity 0.3s;
+}
+
+.user-menu button:hover {
+    opacity: 1;
+}
+
+.user-menu-dropdown {
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 0.5rem;
+    transition: opacity 0.3s;
+    position: absolute;
+    top: 130%;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+}

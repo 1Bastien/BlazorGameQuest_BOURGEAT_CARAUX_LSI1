@@ -1,16 +1,10 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+@* Composant MainLayout pour le layout de l'app. Il sert de wrapper pour toutes les pages. *@
 
-        <article class="content px-4">
+<div class="page-main">
+        <Header />
+        <main class="page-main-content">
             @Body
-        </article>
-    </main>
+        </main>
 </div>
