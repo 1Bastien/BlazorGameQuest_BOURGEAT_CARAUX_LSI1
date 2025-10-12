@@ -1,0 +1,44 @@
+.background-container {
+    background-image: url('/media/background.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    min-height: 100%;
+    width: 100%;
+    position: absolute;
+    inset: 0;
+}
+
+.content-container {
+    position: relative;
+    background-color: rgba(0, 0, 0, 0.5);
+    min-height: 100%;
+    width: 100%;
+    z-index: 1;
+    padding-top: 50px;
+}
+
+.adventure-title {
+    font-size: 30px;
+    line-height: 1.2;
+    letter-spacing: 0.05em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.container .flex-col {
+    flex: 1;
+    min-width: 0;
+}
+
+.how-to-play-title {
+    font-size: 1.5rem;
+    line-height: 1.2;
+    letter-spacing: 0.05em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.text-medieval-light.text-center {
+    margin: 2rem 0;
+    font-size: 1rem;
+}
