@@ -1,0 +1,110 @@
+.game-room {
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 1rem;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.room-header {
+    margin-bottom: 2rem;
+}
+
+.player-stats {
+    display: flex;
+    justify-content: space-around;
+    gap: 2rem;
+    padding: 1rem;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.stat-label {
+    color: var(--medieval-light);
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.stat-value {
+    color: var(--medieval-accent);
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.room-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.room-description {
+    text-align: center;
+    padding: 2rem;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.room-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 2.5rem;
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    min-height: 200px;
+    justify-content: center;
+}
+
+.action-btn:hover {
+    transform: translateY(-5px);
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.action-title {
+    color: var(--medieval-accent);
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.action-desc {
+    color: var(--medieval-light);
+    font-size: 0.9rem;
+    opacity: 0.8;
+    text-align: center;
+}
+
+.combat-btn:hover {
+    border-color: #ff4444;
+    box-shadow: 0 0 15px rgba(255, 68, 68, 0.3);
+}
+
+.search-btn:hover {
+    border-color: #44ff44;
+    box-shadow: 0 0 15px rgba(68, 255, 68, 0.3);
+}
+
+.flee-btn:hover {
+    border-color: #4444ff;
+    box-shadow: 0 0 15px rgba(68, 68, 255, 0.3);
+}

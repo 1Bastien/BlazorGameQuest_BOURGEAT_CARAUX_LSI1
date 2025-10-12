@@ -42,3 +42,117 @@
     margin: 2rem 0;
     font-size: 1rem;
 }
+
+.loading-screen {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.5s ease-in;
+}
+
+.loading-content {
+    max-width: 600px;
+    width: 90%;
+    padding: 2rem;
+}
+
+.loading-scroll {
+    background-color: rgba(139, 69, 19, 0.3);
+    border: 2px solid #8B4513;
+    border-radius: 12px;
+    padding: 3rem;
+    text-align: center;
+    position: relative;
+    animation: unroll 1s ease-out;
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.message-title {
+    font-size: 20px;
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.message-content {
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+    font-size: 15px;
+    letter-spacing: 0.05em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.loading-scroll button.btn-primary {
+    background: linear-gradient(45deg, #8B4513, #D2691E);
+    border: 2px solid #FFD700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+.loading-scroll button.btn-primary:hover {
+    background: linear-gradient(45deg, #D2691E, #8B4513);
+    border-color: #FFA500;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes unroll {
+    from {
+        transform: scaleY(0);
+        opacity: 0;
+    }
+
+    to {
+        transform: scaleY(1);
+        opacity: 1;
+    }
+}
+
+@keyframes flicker {
+    0% {
+        opacity: 0.8;
+        transform: scale(0.95);
+    }
+
+    25% {
+        opacity: 0.9;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+
+    75% {
+        opacity: 0.9;
+        transform: scale(1);
+    }
+
+    100% {
+        opacity: 0.8;
+        transform: scale(0.95);
+    }
+}
