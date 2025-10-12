@@ -1,0 +1,23 @@
+.container {
+    padding-top: 24px;
+}
+
+.ranking-title {
+    font-size: 40px;
+    line-height: 1.2;
+    letter-spacing: 0.05em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+::deep table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+::deep tr:last-child td:first-child {
+    border-bottom-left-radius: 0.5rem;
+}
+
+::deep tr:last-child td:last-child {
+    border-bottom-right-radius: 0.5rem;
+}
