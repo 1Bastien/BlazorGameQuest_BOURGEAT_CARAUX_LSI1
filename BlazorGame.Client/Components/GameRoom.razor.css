@@ -81,18 +81,6 @@
     background-color: rgba(0, 0, 0, 0.7);
 }
 
-.action-title {
-    color: var(--medieval-accent);
-    font-size: 1.5rem;
-    font-weight: bold;
-}
-
-.action-desc {
-    color: var(--medieval-light);
-    font-size: 0.9rem;
-    opacity: 0.8;
-    text-align: center;
-}
 
 .combat-btn:hover {
     border-color: #ff4444;

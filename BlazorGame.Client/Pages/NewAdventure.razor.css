@@ -19,29 +19,11 @@
     padding-top: 50px;
 }
 
-.adventure-title {
-    font-size: 30px;
-    line-height: 1.2;
-    letter-spacing: 0.05em;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-}
-
 .container .flex-col {
     flex: 1;
     min-width: 0;
 }
 
-.how-to-play-title {
-    font-size: 1.5rem;
-    line-height: 1.2;
-    letter-spacing: 0.05em;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.text-medieval-light.text-center {
-    margin: 2rem 0;
-    font-size: 1rem;
-}
 
 .loading-screen {
     position: fixed;
@@ -55,44 +37,35 @@
 }
 
 .loading-content {
-    max-width: 600px;
+    max-width: 400px;
     width: 90%;
-    padding: 2rem;
+    padding: 0.75rem;
 }
 
 .loading-scroll {
     background-color: rgba(139, 69, 19, 0.3);
     border: 2px solid #8B4513;
-    border-radius: 12px;
-    padding: 3rem;
+    border-radius: 8px;
+    padding: 1.5rem;
     text-align: center;
     position: relative;
     animation: unroll 1s ease-out;
-    max-width: 800px;
+    max-width: 450px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 20px;
-}
-
-.message-title {
-    font-size: 20px;
-    line-height: 1.2;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    gap: 12px;
 }
 
 .message-content {
-    max-width: 600px;
+    max-width: 400px;
     margin: 0 auto;
-    line-height: 1.6;
-    font-size: 15px;
+    line-height: 1.4;
     letter-spacing: 0.05em;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 6px;
 }
 
 .loading-scroll button.btn-primary {

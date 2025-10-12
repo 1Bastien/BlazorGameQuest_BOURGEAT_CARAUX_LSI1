@@ -11,16 +11,16 @@
             <div class="loading-screen">
                 <div class="loading-content">
                     <div class="loading-scroll">
-                        <h2 class="message-title font-medieval text-3xl mb-8">Attention, brave aventurier !</h2>
+                        <h2 class="font-medieval text-2xl mb-3">Attention, brave aventurier !</h2>
                         <div class="message-content">
-                            <p class="text-medieval-light mb-8">Vous vous apprêtez à pénétrer dans un donjon périlleux...</p>
-                            <p class="text-medieval-light mb-12">Que les dieux vous accordent leur protection !</p>
+                            <p class="text-medieval-light text-base mb-2">Vous vous apprêtez à pénétrer dans un donjon périlleux...</p>
+                            <p class="text-medieval-light text-base mb-4">Que les dieux vous accordent leur protection !</p>
                         </div>
-                        <div class="mt-12">
+                        <div class="mt-4">
                             <MedievalButton 
                                 Text="En avant, vers l'aventure !"
                                 OnClick="StartAdventure"
-                                IsLarge="true"
+                                IsLarge="false"
                             />
                         </div>
                     </div>
@@ -29,61 +29,61 @@
         }
         else if (!_gameStarted)
         {
-            <div class="container mx-auto px-4 max-w-6xl flex flex-col gap-12">
-                <div class="card text-center p-12 transform hover:scale-[1.02] transition-transform duration-300">
-                    <div class="flex justify-center items-center gap-4 mb-4">
-                        <h1 class="adventure-title font-medieval">Nouvelle Aventure</h1>
+            <div class="container mx-auto px-4 max-w-6xl flex flex-col gap-8">
+                <div class="card text-center p-8 transform hover:scale-[1.02] transition-transform duration-300">
+                    <div class="flex justify-center items-center gap-4 mb-2">
+                        <h1 class="text-4xl font-medieval">Nouvelle Aventure</h1>
                     </div>
-                    <p class="text-medieval-light opacity-80 text-xl font-medieval">Une nouvelle quête vous attend, brave aventurier</p>
+                    <p class="text-medieval-light opacity-80 text-lg font-medieval">Une nouvelle quête vous attend, brave aventurier</p>
                 </div>
 
-                <div class="card p-8 transform hover:scale-[1.01] transition-transform duration-300">
-                    <div class="text-center max-w-6xl mx-auto">
-                        <h2 class="how-to-play-title text-2xl mb-6 font-medieval text-medieval-accent">Comment jouer ?</h2>
+                <div class="card p-6 transform hover:scale-[1.01] transition-transform duration-300">
+                    <div class="text-center max-w-4xl mx-auto">
+                        <h2 class="text-3xl mb-6 font-medieval text-medieval-accent">Comment jouer ?</h2>
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                             <div class="text-left">
-                                <h3 class="text-xl mb-3 font-medieval text-medieval-accent">L'Aventure</h3>
-                                <p class="text-medieval-light">Explorez un donjon unique généré pour vous ! Traversez jusqu'à 5 salles mystérieuses, chacune avec ses propres défis et trésors.</p>
+                                <h3 class="text-lg mb-2 font-medieval text-medieval-accent">L'Aventure</h3>
+                                <p class="text-medieval-light text-sm">Explorez un donjon unique généré pour vous ! Traversez jusqu'à 5 salles mystérieuses, chacune avec ses propres défis et trésors.</p>
                             </div>
                             <div class="text-left">
-                                <h3 class="text-xl mb-3 font-medieval text-medieval-accent">Les Choix</h3>
-                                <p class="text-medieval-light">Dans chaque salle, faites des choix cruciaux : Combattre des monstres, fouiller pour des trésors, ou fuir prudemment !</p>
+                                <h3 class="text-lg mb-2 font-medieval text-medieval-accent">Les Choix</h3>
+                                <p class="text-medieval-light text-sm">Dans chaque salle, faites des choix cruciaux : Combattre des monstres, fouiller pour des trésors, ou fuir prudemment !</p>
                             </div>
                             <div class="text-left">
-                                <h3 class="text-xl mb-3 font-medieval text-medieval-accent">Les Récompenses</h3>
-                                <p class="text-medieval-light">Gagnez des points selon vos actions. Trouvez des trésors précieux, mais attention aux pièges mortels !</p>
+                                <h3 class="text-lg mb-2 font-medieval text-medieval-accent">Les Récompenses</h3>
+                                <p class="text-medieval-light text-sm">Gagnez des points selon vos actions. Trouvez des trésors précieux, mais attention aux pièges mortels !</p>
                             </div>
                             <div class="text-left">
-                                <h3 class="text-xl mb-3 font-medieval text-medieval-accent">La Gloire</h3>
-                                <p class="text-medieval-light">Terminez l'aventure pour inscrire votre nom dans le classement des héros. Sauvegardez votre progression à tout moment.</p>
+                                <h3 class="text-lg mb-2 font-medieval text-medieval-accent">La Gloire</h3>
+                                <p class="text-medieval-light text-sm">Terminez l'aventure pour inscrire votre nom dans le classement des héros. Sauvegardez votre progression à tout moment.</p>
                             </div>
                         </div>
 
-                        <div class="mt-12">
-                            <p class="text-medieval-light text-center">Vous commencez avec <span class="text-medieval-accent font-medieval">100 points de vie</span>. Si vos points de vie tombent à 0, l'aventure se termine !</p>
+                        <div class="mt-8">
+                            <p class="text-medieval-light text-center text-sm">Vous commencez avec <span class="text-medieval-accent font-medieval">100 points de vie</span>. Si vos points de vie tombent à 0, l'aventure se termine !</p>
 
-                            <div class="flex flex-row gap-6 mt-8 justify-between">
-                                <div class="card p-6 transform hover:scale-[1.01] transition-transform duration-300 flex-1">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                                <div class="card p-4 transform hover:scale-[1.01] transition-transform duration-300">
                                     <h4 class="text-lg mb-2 font-medieval text-medieval-accent">Combattre</h4>
-                                    <ul class="text-medieval-light space-y-2 list-disc list-inside">
+                                    <ul class="text-medieval-light space-y-1 list-disc list-inside text-sm">
                                         <li>Victoire : +100 points</li>
                                         <li>Défaite : -50 points et -30 points de vie</li>
                                     </ul>
                                 </div>
 
-                                <div class="card p-6 transform hover:scale-[1.01] transition-transform duration-300 flex-1">
+                                <div class="card p-4 transform hover:scale-[1.01] transition-transform duration-300">
                                     <h4 class="text-lg mb-2 font-medieval text-medieval-accent">Fouiller</h4>
-                                    <ul class="text-medieval-light space-y-2 list-disc list-inside">
+                                    <ul class="text-medieval-light space-y-1 list-disc list-inside text-sm">
                                         <li>Trésor : +75 points</li>
                                         <li>Potion : +40 points de vie</li>
                                         <li>Piège : -25 points et -20 points de vie</li>
                                     </ul>
                                 </div>
 
-                                <div class="card p-6 transform hover:scale-[1.01] transition-transform duration-300 flex-1">
+                                <div class="card p-4 transform hover:scale-[1.01] transition-transform duration-300">
                                     <h4 class="text-lg mb-2 font-medieval text-medieval-accent">Fuir</h4>
-                                    <ul class="text-medieval-light space-y-2 list-disc list-inside">
+                                    <ul class="text-medieval-light space-y-1 list-disc list-inside text-sm">
                                         <li>-15 points</li>
                                         <li>Aucun dégât</li>
                                         <li>Passage sûr à la salle suivante</li>
@@ -94,11 +94,12 @@
                     </div>
                 </div>
 
-                <div class="text-center">
+                <div class="text-center mt-4">
                     <MedievalButton 
                         Text="Commencer l'aventure"
                         OnClick="StartGame"
                         Disabled="@_isLoading"
+                        IsLarge="false"
                     />
                 </div>
             </div>
