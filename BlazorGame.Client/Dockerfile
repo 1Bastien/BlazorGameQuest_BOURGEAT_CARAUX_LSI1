@@ -1,25 +1,35 @@
-# Utilisation de l'image .NET SDK 9.0
-FROM mcr.microsoft.com/dotnet/sdk:9.0
-
+# Utilisation de l'image Node 20
+FROM node:20 AS node-build
 WORKDIR /app
 
-# Copie des fichiers du projet
-COPY BlazorGame.Client/*.csproj ./BlazorGame.Client/
-COPY SharedModels/*.csproj ./SharedModels/
+# Copie des fichiers package.json et package-lock.json
+COPY BlazorGame.Client/package*.json ./
 
-# Restauration des dépendances
-WORKDIR /app/BlazorGame.Client
-RUN dotnet restore
+# Installation des dépendances
+RUN npm install
 
 # Copie du code source
-WORKDIR /app
-COPY BlazorGame.Client/ ./BlazorGame.Client/
-COPY SharedModels/ ./SharedModels/
+COPY BlazorGame.Client/ .
 
-# Définition du dossier du projet à exécuter
-WORKDIR /app/BlazorGame.Client
+# Construction du CSS
+RUN npx tailwindcss -i ./wwwroot/css/app.css -o ./wwwroot/css/app.min.css --minify
 
-# Exposition du port 80
+# Utilisation de l'image .NET 9
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS dotnet-build
+WORKDIR /src
+
+# Copier les fichiers du build node dans le dossier client
+COPY --from=node-build /app ./BlazorGame.Client
+
+# Copier le projet SharedModels
+COPY ["SharedModels/SharedModels.csproj", "./SharedModels/"]
+COPY ["SharedModels/", "./SharedModels/"]
+WORKDIR /src/BlazorGame.Client
+
+# Restauration des dépendances
+RUN dotnet restore
+
+# Exposition du port
 EXPOSE 80
 
 # Lancement de l'application en mode développement

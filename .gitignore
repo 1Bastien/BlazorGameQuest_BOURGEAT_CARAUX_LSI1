@@ -161,3 +161,6 @@ orleans.codegen.cs
 .Trashes
 .VolumeIcon.icns
 .com.apple.timemachine.donotpresent
+
+# Node modules
+node_modules/
