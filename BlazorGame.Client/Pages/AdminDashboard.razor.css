@@ -1,0 +1,10 @@
+.container {
+    padding-top: 24px;
+}
+
+.admin-title {
+    font-size: 40px;
+    line-height: 1.2;
+    letter-spacing: 0.05em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}

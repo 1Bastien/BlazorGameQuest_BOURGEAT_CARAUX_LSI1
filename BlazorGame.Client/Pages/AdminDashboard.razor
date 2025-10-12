@@ -1,0 +1,63 @@
+@page "/admin-dashboard"
+
+@* Page de tableau de bord administrateur *@
+
+<PageTitle>Administration</PageTitle>
+
+<div class="min-h-screen bg-medieval-dark/50 py-12">
+    <div class="container mx-auto px-4 max-w-6xl flex flex-col gap-12">
+        <div class="card text-center p-12 transform hover:scale-[1.02] transition-transform duration-300">
+            <div class="flex justify-center items-center gap-4 mb-4">
+                <div class="h-1 flex-1 bg-medieval-accent/30"></div>
+                <h1 class="admin-title font-medieval">Tableau de bord Administrateur</h1>
+                <div class="h-1 flex-1 bg-medieval-accent/30"></div>
+            </div>
+            <p class="text-medieval-light opacity-80 text-xl font-medieval">Gérez votre royaume avec sagesse</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="card p-8 transform hover:scale-[1.01] transition-transform duration-300">
+                <h3 class="text-xl mb-2 font-medieval text-medieval-accent">Nombre de joueurs</h3>
+                <p class="text-3xl font-bold font-medieval">-</p>
+            </div>
+            <div class="card p-8 transform hover:scale-[1.01] transition-transform duration-300">
+                <h3 class="text-xl mb-2 font-medieval text-medieval-accent">Parties finies</h3>
+                <p class="text-3xl font-bold font-medieval">-</p>
+            </div>
+            <div class="card p-8 transform hover:scale-[1.01] transition-transform duration-300">
+                <h3 class="text-xl mb-2 font-medieval text-medieval-accent">Donjons créés</h3>
+                <p class="text-3xl font-bold font-medieval">-</p>
+            </div>
+        </div>
+
+        <div class="card overflow-hidden p-8 transform hover:scale-[1.01] transition-transform duration-300">
+            <h2 class="text-2xl mb-6 font-medieval text-medieval-accent">Gestion des joueurs</h2>
+            <div class="flex flex-wrap gap-4 justify-center">
+                <button class="btn-primary">
+                    Voir tous les joueurs
+                </button>
+                <button class="btn-secondary bg-yellow-700 hover:bg-yellow-600">
+                    Bannir un joueur
+                </button>
+                <button class="btn-secondary bg-green-700 hover:bg-green-600">
+                    Débannir un joueur
+                </button>
+            </div>
+        </div>
+
+        <div class="card overflow-hidden p-8 transform hover:scale-[1.01] transition-transform duration-300">
+            <h2 class="text-2xl mb-6 font-medieval text-medieval-accent">Gestion du contenu</h2>
+            <div class="flex flex-wrap gap-4 justify-center">
+                <button class="btn-primary">
+                    Créer un donjon
+                </button>
+                <button class="btn-secondary bg-blue-700 hover:bg-blue-600">
+                    Modifier un donjon
+                </button>
+                <button class="btn-secondary bg-red-700 hover:bg-red-600">
+                    Supprimer un donjon
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
