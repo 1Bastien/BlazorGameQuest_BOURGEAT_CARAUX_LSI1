@@ -15,4 +15,12 @@
     <ProjectReference Include="..\SharedModels\SharedModels.csproj" />
   </ItemGroup>
 
+  <Target Name="NpmInstall" BeforeTargets="Build" Condition=" !Exists('node_modules') ">
+    <Exec Command="npm install" WorkingDirectory="$(MSBuildProjectDirectory)" />
+  </Target>
+
+  <Target Name="BuildTailwindCSS" BeforeTargets="Build" DependsOnTargets="NpmInstall">
+    <Exec Command="npm run css:build" WorkingDirectory="$(MSBuildProjectDirectory)" />
+  </Target>
+
 </Project>
