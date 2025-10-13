@@ -1,0 +1,77 @@
+.loading-screen {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.5s ease-in;
+}
+
+.loading-content {
+    max-width: 400px;
+    width: 90%;
+    padding: 0.75rem;
+}
+
+.loading-scroll {
+    background-color: rgba(139, 69, 19, 0.3);
+    border: 2px solid #8B4513;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    position: relative;
+    animation: unroll 1s ease-out;
+    max-width: 450px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.message-content {
+    max-width: 400px;
+    margin: 0 auto;
+    line-height: 1.4;
+    letter-spacing: 0.05em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.loading-scroll button.btn-primary {
+    background: linear-gradient(45deg, #8B4513, #D2691E);
+    border: 2px solid #FFD700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+.loading-scroll button.btn-primary:hover {
+    background: linear-gradient(45deg, #D2691E, #8B4513);
+    border-color: #FFA500;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes unroll {
+    from {
+        transform: scaleY(0);
+        opacity: 0;
+    }
+
+    to {
+        transform: scaleY(1);
+        opacity: 1;
+    }
+}

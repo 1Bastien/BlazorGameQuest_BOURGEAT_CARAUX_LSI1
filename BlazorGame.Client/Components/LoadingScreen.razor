@@ -1,0 +1,32 @@
+@namespace BlazorGame.Client.Components
+
+@* Composant d'écran de chargement *@
+
+<div class="loading-screen">
+    <div class="loading-content">
+        <div class="loading-scroll">
+            <h2 class="font-medieval text-2xl mb-3">Attention, brave aventurier !</h2>
+            <div class="message-content">
+                <p class="text-medieval-light text-base mb-2">Vous vous apprêtez à pénétrer dans un donjon périlleux...</p>
+                <p class="text-medieval-light text-base mb-4">Que les dieux vous accordent leur protection !</p>
+            </div>
+            <div class="mt-4">
+                <MedievalButton 
+                    Text="En avant, vers l'aventure !"
+                    OnClick="OnContinue"
+                    IsLarge="false"
+                />
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback OnContinueClick { get; set; }
+
+    private async Task OnContinue()
+    {
+        await OnContinueClick.InvokeAsync();
+    }
+}
