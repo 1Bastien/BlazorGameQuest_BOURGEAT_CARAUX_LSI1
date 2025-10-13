@@ -1,6 +1,8 @@
 @inherits ComponentBase
 
-@* Composant UserMenu pour le menu utilisateur, quand on clique sur l'icon de l'utilisateur *@
+@* Composant UserMenu pour le menu utilisateur, quand on clique sur l'icon de l'utilisateur
+ * Pour le moment le service d'authentification n'est pas implémenté, donc on a accès à toutes les pages
+ *@
 
 <div class="user-menu relative" @onclick:stopPropagation>
     <button @onclick="ToggleUserMenu" class="hover:opacity-100">
