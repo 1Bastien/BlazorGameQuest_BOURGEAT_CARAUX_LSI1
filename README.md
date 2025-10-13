@@ -23,7 +23,13 @@ Les services seront disponibles sur :
 
 ## Description du projet
 
-Le joueur explore des salles, combat des monstres et accumule des points. Le projet utilise une architecture microservices pour gérer les différentes fonctionnalités.
+Le joueur explore différentes salles, affronte des monstres et accumule des points.
+Les salles peuvent être de type « combat » ou « fouille ».
+Selon le type de salle, le joueur peut choisir de combattre, de fouiller ou de fuir, ce qui lui fera gagner ou perdre des points et de la vie.
+Les règles détaillées sont disponibles sur la page « Nouvelle Aventure ».
+
+L’administrateur peut créer, modifier ou supprimer des salles en définissant une description et des récompenses différentes (nombre de points à gagner ou perdre),
+tout en respectant le type de chaque salle.
 
 ## Architecture
 
@@ -34,6 +40,7 @@ Le projet est divisé en plusieurs applications :
 - **AuthenticationServices** : Gestion des utilisateurs et connexion
 - **BlazorGame.Core** : Logique du jeu
 - **SharedModels** : Modèles partagés entre les services
+- **BlazorGame.Tests** : Projet dédié aux tests unitaires et d’intégration de la solution.
 
 Nous avons choisi une architecture microservices car c’est l’une des plus modulaires et scalables.
 Pour pouvoir potentiellement accueillir un grand nombre de joueurs, cette architecture permet une montée en charge facile.
@@ -60,6 +67,7 @@ Notre frontend est organisé en trois dossiers principaux :
 
 Les tests seront implémentés avec xUnit.
 
-- Tests unitaires pour les différentes méthodes des classes du backend, par exemple le calcul des scores. Une base de données InMemory sera également utilisée afin de tester les opérations d’ajout, de modification et de suppression de données.
-
-- Tests d’intégration pour les interactions entre les différents services, comme l’API Gateway, le service d’authentification ou la gestion des exceptions.
+- Tests unitaires pour les différentes méthodes des classes du backend, par exemple le calcul des scores automatiques apres une partie,
+  le calcul du score et de la vie dans le jeu apres les decisions dans les salles, le test des chaque méthode CRUD des entités, etc.
+  Une base de données InMemory sera également utilisée afin de tester les opérations d’ajout, de modification et de suppression de données.
+  Enfin, la validation des données sera faite dans les DTO et entités avec les annotations Data Annotation.
