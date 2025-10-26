@@ -16,9 +16,18 @@ WORKDIR /app
 COPY BlazorGame.Gateway/ ./BlazorGame.Gateway/
 COPY SharedModels/ ./SharedModels/
 
+# Renommer appsettings.Docker.json en appsettings.json pour l'environnement Docker
+WORKDIR /app/BlazorGame.Gateway
+RUN if [ -f "appsettings.Docker.json" ]; then \
+    mv appsettings.Docker.json appsettings.json; \
+    fi
+
 # Exposition du port
 WORKDIR /app/BlazorGame.Gateway
-EXPOSE 5001
+EXPOSE 5000
 
-# Lancement de l'application en mode développement
-CMD ["dotnet", "run", "--urls", "http://0.0.0.0:5001"]
+# Configuration de l'environnement Docker
+ENV ASPNETCORE_ENVIRONMENT=Docker
+
+# Lancement de l'application
+CMD ["dotnet", "run", "--urls", "http://0.0.0.0:5000"]

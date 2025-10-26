@@ -24,7 +24,10 @@ COPY ["SharedModels/", "../SharedModels/"]
 RUN dotnet restore
 
 # Exposition du port
-EXPOSE 5000
+EXPOSE 80
 
-# Lancement de l'application en mode développement
-CMD ["dotnet", "run", "--urls", "http://0.0.0.0:5000"]
+# Configuration de l'environnement
+ENV ASPNETCORE_URLS=http://+:80
+
+# Lancement de l'application
+CMD ["dotnet", "run", "--no-launch-profile"]

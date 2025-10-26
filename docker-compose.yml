@@ -4,10 +4,10 @@ services:
     build:
       context: .
       dockerfile: BlazorGame.Client/Dockerfile
-    ports:
-      - "5000:5000" # Port exposé pour le frontend
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+    networks:
+      - internal-network
 
   # Gateway API (point d'entrée pour les services backend)
   gateway:
@@ -15,12 +15,16 @@ services:
       context: .
       dockerfile: BlazorGame.Gateway/Dockerfile
     ports:
-      - "5001:5001" # Port exposé pour la gateway
+      - "5000:5000" # Port exposé pour la gateway
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - CLIENT_SERVICE_URL=http://client:80
     depends_on:
+      - client
       - auth-service
       - core-service
+    networks:
+      - internal-network
 
   # Service d'authentification
   auth-service:
@@ -29,6 +33,8 @@ services:
       dockerfile: AuthenticationServices/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+    networks:
+      - internal-network
     # Pas de port exposé publiquement, seulement accessible via la gateway
 
   # Service principal du jeu
@@ -38,4 +44,10 @@ services:
       dockerfile: BlazorGame.Core/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+    networks:
+      - internal-network
     # Pas de port exposé publiquement, seulement accessible via la gateway
+
+networks:
+  internal-network:
+    driver: bridge
