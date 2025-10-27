@@ -23,13 +23,18 @@ Les services seront disponibles sur :
 
 ## Description du projet
 
-Le joueur explore différentes salles, affronte des monstres et accumule des points.
-Les salles peuvent être de type « combat » ou « fouille ».
-Selon le type de salle, le joueur peut choisir de combattre, de fouiller ou de fuir, ce qui lui fera gagner ou perdre des points et de la vie.
-Les règles détaillées sont disponibles sur la page « Nouvelle Aventure ».
+Le joueur explore un nombre aléatoire de salles générées automatiquement.
+À chaque salle, il peut choisir entre trois actions : **Combattre**, **Fouiller** ou **Fuir**.
 
-L’administrateur peut créer, modifier ou supprimer des salles en définissant une description et des récompenses différentes (nombre de points à gagner ou perdre),
-tout en respectant le type de chaque salle.
+- **Combat** : 50% de chance de victoire (gagne des points) ou de défaite (perd des points et de la vie)
+- **Fouille** : 33% de trouver un trésor (gagne des points), 33% une potion (gagne de la vie), 33% un piège (perd des points et de la vie)
+- **Fuite** : perd des points mais ne subit aucun dégât
+
+Les points et la vie gagnés ou perdus varient aléatoirement dans des plages configurables.
+La vie est plafonnée à 200 et la partie se termine si le joueur meurt (vie à 0) ou termine toutes les salles.
+
+L'administrateur peut créer, modifier ou supprimer des modèles de salles avec des descriptions personnalisées,
+ainsi que modifier la configuration globale des récompenses et pénalités du jeu.
 
 ## Architecture
 
@@ -45,6 +50,18 @@ Le projet est divisé en plusieurs applications :
 Nous avons choisi une architecture microservices car c’est l’une des plus modulaires et scalables.
 Pour pouvoir potentiellement accueillir un grand nombre de joueurs, cette architecture permet une montée en charge facile.
 Elle nous offrira également une grande flexibilité pour ajouter de nouvelles fonctionnalités au jeu de base.
+
+### Configuration de la Gateway (YARP)
+
+La gateway utilise **YARP (Yet Another Reverse Proxy)** pour router les requêtes vers les différents services.
+
+**Routes configurées :**
+
+- `/api/GameSessions/*` → Core Service
+- `/api/GameRewards/*` → Core Service
+- `/api/RoomTemplates/*` → Core Service
+- `/api/auth/*` → Auth Service
+- `/*` (tout le reste) → Client Blazor
 
 ## Frontend (BlazorGame.Client)
 
@@ -65,9 +82,13 @@ Notre frontend est organisé en trois dossiers principaux :
 
 ## Stratégie de tests
 
-Les tests seront implémentés avec xUnit.
+Les tests sont implémentés avec xUnit et une base de données InMemory.
 
-- Tests unitaires pour les différentes méthodes des classes du backend, par exemple le calcul des scores automatiques apres une partie,
-  le calcul du score et de la vie dans le jeu apres les decisions dans les salles, le test des chaque méthode CRUD des entités, etc.
-  Une base de données InMemory sera également utilisée afin de tester les opérations d’ajout, de modification et de suppression de données.
-  Enfin, la validation des données sera faite dans les DTO et entités avec les annotations Data Annotation.
+- **GameSessionServiceTests** : création, mise à jour et abandon de sessions, gestion des états de jeu
+- **GameActionServiceTests** : traitement des actions (combat, fouille, fuite), calcul des points et de la vie, transitions d'état
+- **RoomTemplateServiceTests** : opérations CRUD sur les modèles de salles
+- **GameRewardsServiceTests** : récupération et mise à jour de la configuration des récompenses
+
+La validation des données est assurée par les annotations Data Annotation sur les entités.
+
+Nous ajouterons les tests unitaires sur les prochaines méthodes des prochains services ainsi que des tests sur les controllers par la suite.
