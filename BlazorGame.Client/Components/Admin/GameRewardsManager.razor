@@ -1,0 +1,243 @@
+@using SharedModels.Entities
+@using BlazorGame.Client.Services
+@inject AdminService AdminService
+
+@* Composant pour les formulaires de configuration des récompenses et pénalités du jeu *@
+
+<div class="card p-6">
+    <h2 class="text-2xl mb-6 font-medieval text-medieval-accent text-center">Configuration des récompenses</h2>
+    
+    @if (_isLoading)
+    {
+        <div class="text-center text-medieval-light">
+            <p>Chargement...</p>
+        </div>
+    }
+    else if (_config != null)
+    {
+        <EditForm Model="@_config" OnValidSubmit="HandleSave">
+            <DataAnnotationsValidator />
+            
+            <div class="space-y-6">
+                <div class="config-section">
+                    <h3 class="section-title">Paramètres généraux</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="form-label">Nombre de salles par partie</label>
+                            <InputNumber @bind-Value="_config.NumberOfRooms" class="w-full bg-medieval-dark/80 border-2 border-medieval-accent/50 rounded-lg px-4 py-3 text-medieval-accent font-medieval focus:outline-none focus:border-medieval-accent focus:ring-2 focus:ring-medieval-accent/20 hover:border-medieval-accent/70 transition-all" />
+                            <ValidationMessage For="@(() => _config.NumberOfRooms)" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Points de vie de départ</label>
+                            <InputNumber @bind-Value="_config.StartingHealth" class="w-full bg-medieval-dark/80 border-2 border-medieval-accent/50 rounded-lg px-4 py-3 text-medieval-accent font-medieval focus:outline-none focus:border-medieval-accent focus:ring-2 focus:ring-medieval-accent/20 hover:border-medieval-accent/70 transition-all" />
+                            <ValidationMessage For="@(() => _config.StartingHealth)" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-section">
+                    <h3 class="section-title">Combat - Victoire</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="form-label">Points min</label>
+                            <InputNumber @bind-Value="_config.MinCombatVictoryPoints" class="w-full bg-medieval-dark/80 border-2 border-medieval-accent/50 rounded-lg px-4 py-3 text-medieval-accent font-medieval focus:outline-none focus:border-medieval-accent focus:ring-2 focus:ring-medieval-accent/20 hover:border-medieval-accent/70 transition-all" />
+                            <ValidationMessage For="@(() => _config.MinCombatVictoryPoints)" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Points max</label>
+                            <InputNumber @bind-Value="_config.MaxCombatVictoryPoints" class="w-full bg-medieval-dark/80 border-2 border-medieval-accent/50 rounded-lg px-4 py-3 text-medieval-accent font-medieval focus:outline-none focus:border-medieval-accent focus:ring-2 focus:ring-medieval-accent/20 hover:border-medieval-accent/70 transition-all" />
+                            <ValidationMessage For="@(() => _config.MaxCombatVictoryPoints)" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-section">
+                    <h3 class="section-title">Combat - Défaite</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="form-label">Points min (négatif)</label>
+                            <InputNumber @bind-Value="_config.MinCombatDefeatPoints" class="w-full bg-medieval-dark/80 border-2 border-medieval-accent/50 rounded-lg px-4 py-3 text-medieval-accent font-medieval focus:outline-none focus:border-medieval-accent focus:ring-2 focus:ring-medieval-accent/20 hover:border-medieval-accent/70 transition-all" />
+                            <ValidationMessage For="@(() => _config.MinCombatDefeatPoints)" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Points max (négatif)</label>
+                            <InputNumber @bind-Value="_config.MaxCombatDefeatPoints" class="w-full bg-medieval-dark/80 border-2 border-medieval-accent/50 rounded-lg px-4 py-3 text-medieval-accent font-medieval focus:outline-none focus:border-medieval-accent focus:ring-2 focus:ring-medieval-accent/20 hover:border-medieval-accent/70 transition-all" />
+                            <ValidationMessage For="@(() => _config.MaxCombatDefeatPoints)" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Perte PV min (négatif)</label>
+                            <InputNumber @bind-Value="_config.MinCombatDefeatHealthLoss" class="w-full bg-medieval-dark/80 border-2 border-medieval-accent/50 rounded-lg px-4 py-3 text-medieval-accent font-medieval focus:outline-none focus:border-medieval-accent focus:ring-2 focus:ring-medieval-accent/20 hover:border-medieval-accent/70 transition-all" />
+                            <ValidationMessage For="@(() => _config.MinCombatDefeatHealthLoss)" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Perte PV max (négatif)</label>
+                            <InputNumber @bind-Value="_config.MaxCombatDefeatHealthLoss" class="w-full bg-medieval-dark/80 border-2 border-medieval-accent/50 rounded-lg px-4 py-3 text-medieval-accent font-medieval focus:outline-none focus:border-medieval-accent focus:ring-2 focus:ring-medieval-accent/20 hover:border-medieval-accent/70 transition-all" />
+                            <ValidationMessage For="@(() => _config.MaxCombatDefeatHealthLoss)" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-section">
+                    <h3 class="section-title">Fouille - Trésor</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="form-label">Points min</label>
+                            <InputNumber @bind-Value="_config.MinTreasurePoints" class="w-full bg-medieval-dark/80 border-2 border-medieval-accent/50 rounded-lg px-4 py-3 text-medieval-accent font-medieval focus:outline-none focus:border-medieval-accent focus:ring-2 focus:ring-medieval-accent/20 hover:border-medieval-accent/70 transition-all" />
+                            <ValidationMessage For="@(() => _config.MinTreasurePoints)" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Points max</label>
+                            <InputNumber @bind-Value="_config.MaxTreasurePoints" class="w-full bg-medieval-dark/80 border-2 border-medieval-accent/50 rounded-lg px-4 py-3 text-medieval-accent font-medieval focus:outline-none focus:border-medieval-accent focus:ring-2 focus:ring-medieval-accent/20 hover:border-medieval-accent/70 transition-all" />
+                            <ValidationMessage For="@(() => _config.MaxTreasurePoints)" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-section">
+                    <h3 class="section-title">Fouille - Potion</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="form-label">Gain PV min</label>
+                            <InputNumber @bind-Value="_config.MinPotionHealthGain" class="w-full bg-medieval-dark/80 border-2 border-medieval-accent/50 rounded-lg px-4 py-3 text-medieval-accent font-medieval focus:outline-none focus:border-medieval-accent focus:ring-2 focus:ring-medieval-accent/20 hover:border-medieval-accent/70 transition-all" />
+                            <ValidationMessage For="@(() => _config.MinPotionHealthGain)" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Gain PV max</label>
+                            <InputNumber @bind-Value="_config.MaxPotionHealthGain" class="w-full bg-medieval-dark/80 border-2 border-medieval-accent/50 rounded-lg px-4 py-3 text-medieval-accent font-medieval focus:outline-none focus:border-medieval-accent focus:ring-2 focus:ring-medieval-accent/20 hover:border-medieval-accent/70 transition-all" />
+                            <ValidationMessage For="@(() => _config.MaxPotionHealthGain)" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-section">
+                    <h3 class="section-title">Fouille - Piège</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="form-label">Points min (négatif)</label>
+                            <InputNumber @bind-Value="_config.MinTrapPoints" class="w-full bg-medieval-dark/80 border-2 border-medieval-accent/50 rounded-lg px-4 py-3 text-medieval-accent font-medieval focus:outline-none focus:border-medieval-accent focus:ring-2 focus:ring-medieval-accent/20 hover:border-medieval-accent/70 transition-all" />
+                            <ValidationMessage For="@(() => _config.MinTrapPoints)" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Points max (négatif)</label>
+                            <InputNumber @bind-Value="_config.MaxTrapPoints" class="w-full bg-medieval-dark/80 border-2 border-medieval-accent/50 rounded-lg px-4 py-3 text-medieval-accent font-medieval focus:outline-none focus:border-medieval-accent focus:ring-2 focus:ring-medieval-accent/20 hover:border-medieval-accent/70 transition-all" />
+                            <ValidationMessage For="@(() => _config.MaxTrapPoints)" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Perte PV min (négatif)</label>
+                            <InputNumber @bind-Value="_config.MinTrapHealthLoss" class="w-full bg-medieval-dark/80 border-2 border-medieval-accent/50 rounded-lg px-4 py-3 text-medieval-accent font-medieval focus:outline-none focus:border-medieval-accent focus:ring-2 focus:ring-medieval-accent/20 hover:border-medieval-accent/70 transition-all" />
+                            <ValidationMessage For="@(() => _config.MinTrapHealthLoss)" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Perte PV max (négatif)</label>
+                            <InputNumber @bind-Value="_config.MaxTrapHealthLoss" class="w-full bg-medieval-dark/80 border-2 border-medieval-accent/50 rounded-lg px-4 py-3 text-medieval-accent font-medieval focus:outline-none focus:border-medieval-accent focus:ring-2 focus:ring-medieval-accent/20 hover:border-medieval-accent/70 transition-all" />
+                            <ValidationMessage For="@(() => _config.MaxTrapHealthLoss)" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-section">
+                    <h3 class="section-title">Fuite</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="form-label">Points min (négatif)</label>
+                            <InputNumber @bind-Value="_config.MinFleePoints" class="w-full bg-medieval-dark/80 border-2 border-medieval-accent/50 rounded-lg px-4 py-3 text-medieval-accent font-medieval focus:outline-none focus:border-medieval-accent focus:ring-2 focus:ring-medieval-accent/20 hover:border-medieval-accent/70 transition-all" />
+                            <ValidationMessage For="@(() => _config.MinFleePoints)" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Points max (négatif)</label>
+                            <InputNumber @bind-Value="_config.MaxFleePoints" class="w-full bg-medieval-dark/80 border-2 border-medieval-accent/50 rounded-lg px-4 py-3 text-medieval-accent font-medieval focus:outline-none focus:border-medieval-accent focus:ring-2 focus:ring-medieval-accent/20 hover:border-medieval-accent/70 transition-all" />
+                            <ValidationMessage For="@(() => _config.MaxFleePoints)" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <div class="error-message mt-4">
+                    <p>@_errorMessage</p>
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(_successMessage))
+            {
+                <div class="success-message mt-4">
+                    <p>@_successMessage</p>
+                </div>
+            }
+
+            <div class="flex justify-center gap-4 mt-6">
+                <button type="submit" class="btn-primary" disabled="@_isSaving">
+                        <span>Enregistrer les modifications</span>
+                </button>
+                <button type="button" class="btn-secondary" @onclick="LoadConfig" disabled="@_isSaving">
+                    <span>Annuler</span>
+                </button>
+            </div>
+        </EditForm>
+    }
+</div>   
+
+@code {
+    private GameRewards? _config;
+    private bool _isLoading = true;
+    private bool _isSaving = false;
+    private string _errorMessage = string.Empty;
+    private string _successMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadConfig();
+    }
+
+    private async Task LoadConfig()
+    {
+        try
+        {
+            _isLoading = true;
+            _errorMessage = string.Empty;
+            _successMessage = string.Empty;
+            _config = await AdminService.GetGameRewardsAsync();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Erreur lors du chargement : {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task HandleSave()
+    {
+        try
+        {
+            _isSaving = true;
+            _errorMessage = string.Empty;
+            _successMessage = string.Empty;
+
+            if (_config != null)
+            {
+                await AdminService.UpdateGameRewardsAsync(_config);
+                _successMessage = "Configuration enregistrée avec succès !";
+                
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(2000);
+                    _successMessage = string.Empty;
+                    await InvokeAsync(StateHasChanged);
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Erreur lors de l'enregistrement : {ex.Message}";
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+}
+

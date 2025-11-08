@@ -8,3 +8,51 @@
     letter-spacing: 0.05em;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
+
+.tabs-container {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    padding: 0.75rem 1.5rem;
+    background: rgba(139, 69, 19, 0.3);
+    border: 2px solid rgba(205, 133, 63, 0.3);
+    border-radius: 8px;
+    color: var(--medieval-light);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'MedievalSharp', cursive;
+}
+
+.tab-btn:hover {
+    background: rgba(139, 69, 19, 0.5);
+    border-color: var(--medieval-accent);
+    transform: translateY(-2px);
+}
+
+.tab-btn.active {
+    background: rgba(205, 133, 63, 0.3);
+    border-color: var(--medieval-accent);
+    color: var(--medieval-accent);
+    box-shadow: 0 4px 12px rgba(205, 133, 63, 0.3);
+}
+
+.tab-content {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

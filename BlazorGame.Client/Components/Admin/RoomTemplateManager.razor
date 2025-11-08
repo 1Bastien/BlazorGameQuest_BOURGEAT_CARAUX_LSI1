@@ -1,0 +1,414 @@
+@using SharedModels.Entities
+@using SharedModels.Enums
+@using BlazorGame.Client.Services
+@inject AdminService AdminService
+
+@* Composant pour les formulaires de gestion des salles  *@
+
+<div class="card p-6">
+    <h2 class="text-2xl mb-6 font-medieval text-medieval-accent text-center">Gestion des salles</h2>
+    
+    @if (_isLoading)
+    {
+        <div class="text-center text-medieval-light">
+            <p>Chargement...</p>
+        </div>
+    }
+    else
+    {
+        <div class="mb-6 text-center">
+            <button class="btn-primary" @onclick="ShowCreateModal">
+                Créer une nouvelle salle
+            </button>
+        </div>
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <div class="error-message mb-4">
+                <p>@_errorMessage</p>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(_successMessage))
+        {
+            <div class="success-message mb-4">
+                <p>@_successMessage</p>
+            </div>
+        }
+
+        @if (_rooms == null || _rooms.Count == 0)
+        {
+            <div class="text-center text-medieval-light italic">
+                Aucune salle créée pour le moment
+            </div>
+        }
+        else
+        {
+            <div class="rooms-grid">
+                @foreach (var room in _rooms)
+                {
+                    <div class="room-card @(!room.IsActive ? "room-inactive" : "")">
+                        <div class="room-header">
+                            <h3 class="room-name">@room.Name</h3>
+                            <span class="room-type-badge @GetRoomTypeClass(room.Type)">
+                                @GetRoomTypeIcon(room.Type) @room.Type
+                            </span>
+                        </div>
+                        
+                        <p class="room-description">@room.Description</p>
+                        
+                        <div class="room-status-toggle">
+                            <span class="status-label">Statut :</span>
+                            <label class="toggle-switch" @onclick="() => ToggleRoomActive(room)" @onclick:stopPropagation="true">
+                                <input type="checkbox" 
+                                       checked="@room.IsActive" 
+                                       disabled="@_isToggling"
+                                       @onclick:preventDefault />
+                                <span class="toggle-slider"></span>
+                            </label>
+                            @if (room.IsActive)
+                            {
+                                <span class="status-text status-active">Active</span>
+                            }
+                            else
+                            {
+                                <span class="status-text status-inactive">Inactive</span>
+                            }
+                        </div>
+                        
+                        <div class="room-actions">
+                            <button class="btn-edit" @onclick="() => ShowEditModal(room)">
+                                Modifier
+                            </button>
+                            <button class="btn-delete" @onclick="() => ShowDeleteModal(room)">
+                                Supprimer
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>
+
+@* Modal de création/édition *@
+@if (_showModal)
+{
+    <div class="modal-overlay" @onclick="HideModal">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <h2 class="font-medieval text-3xl mb-4 text-medieval-accent">
+                @(_isEditMode ? "Modifier la salle" : "Créer une salle")
+            </h2>
+            
+            <EditForm Model="@_currentRoom" OnValidSubmit="HandleSaveRoom">
+                <DataAnnotationsValidator />
+                
+                <div class="space-y-4">
+                    <div class="form-group">
+                        <label class="form-label">Nom de la salle *</label>
+                        <InputText @bind-Value="_currentRoom.Name" class="w-full bg-medieval-dark/80 border-2 border-medieval-accent/50 rounded-lg px-4 py-3 text-medieval-accent font-medieval focus:outline-none focus:border-medieval-accent focus:ring-2 focus:ring-medieval-accent/20 hover:border-medieval-accent/70 transition-all" placeholder="Ex: Salle du Dragon" />
+                        <ValidationMessage For="@(() => _currentRoom.Name)" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Description *</label>
+                        <InputTextArea @bind-Value="_currentRoom.Description" class="w-full bg-medieval-dark/80 border-2 border-medieval-accent/50 rounded-lg px-4 py-3 text-medieval-light font-text focus:outline-none focus:border-medieval-accent focus:ring-2 focus:ring-medieval-accent/20 hover:border-medieval-accent/70 transition-all resize-y" 
+                                       placeholder="Décrivez l'atmosphère et les dangers de cette salle..." 
+                                       rows="4" />
+                        <ValidationMessage For="@(() => _currentRoom.Description)" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Type de salle *</label>
+                        <InputSelect @bind-Value="_currentRoom.Type" class="w-full bg-medieval-dark/80 border-2 border-medieval-accent/50 rounded-lg px-4 py-3 text-medieval-accent font-medieval focus:outline-none focus:border-medieval-accent focus:ring-2 focus:ring-medieval-accent/20 hover:border-medieval-accent/70 transition-all">
+                            <option value="@RoomType.Combat">⚔️ Combat</option>
+                            <option value="@RoomType.Search">🔍 Fouille</option>
+                        </InputSelect>
+                        <ValidationMessage For="@(() => _currentRoom.Type)" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="flex items-center gap-3 text-medieval-light cursor-pointer p-2 rounded-lg hover:bg-medieval-accent/10 transition-all">
+                            <InputCheckbox @bind-Value="_currentRoom.IsActive" class="w-5 h-5 cursor-pointer accent-medieval-accent rounded" />
+                            <span>Salle active (utilisable dans les parties)</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4 justify-center mt-6">
+                    <button type="submit" class="btn-primary" disabled="@_isSaving">
+                        @if (_isSaving)
+                        {
+                            <span>Enregistrement...</span>
+                        }
+                        else
+                        {
+                            <span>Enregistrer</span>
+                        }
+                    </button>
+                    <button type="button" class="btn-secondary" @onclick="HideModal" disabled="@_isSaving">
+                        Annuler
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+}
+
+@* Modal de confirmation de suppression *@
+@if (_showDeleteModal)
+{
+    <div class="modal-overlay" @onclick="HideDeleteModal">
+        <div class="modal-content" @onclick:stopPropagation="true">
+            <h2 class="font-medieval text-3xl mb-4 text-medieval-accent">Supprimer la salle ?</h2>
+            <p class="text-medieval-light mb-4">
+                Êtes-vous sûr de vouloir supprimer la salle <strong>"@_roomToDelete?.Name"</strong> ?
+            </p>
+            <div class="warning-box mb-6">
+                <p class="text-yellow-500 font-bold mb-2">Attention</p>
+                <p class="text-medieval-light text-sm">
+                    Cette action est <strong>irréversible</strong>. La salle sera définitivement supprimée.
+                </p>
+            </div>
+            <div class="flex gap-4 justify-center">
+                <button class="btn-danger" @onclick="ConfirmDelete" disabled="@_isDeleting">
+                    @if (_isDeleting)
+                    {
+                        <span>Suppression...</span>
+                    }
+                    else
+                    {
+                        <span>Oui, supprimer</span>
+                    }
+                </button>
+                <button class="btn-secondary" @onclick="HideDeleteModal" disabled="@_isDeleting">
+                    Annuler
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<RoomTemplate> _rooms = new();
+    private RoomTemplate _currentRoom = new();
+    private RoomTemplate? _roomToDelete;
+    
+    private bool _isLoading = true;
+    private bool _isSaving = false;
+    private bool _isDeleting = false;
+    private bool _isToggling = false;
+    private bool _showModal = false;
+    private bool _showDeleteModal = false;
+    private bool _isEditMode = false;
+    
+    private string _errorMessage = string.Empty;
+    private string _successMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRooms();
+    }
+
+    private async Task LoadRooms()
+    {
+        try
+        {
+            _isLoading = true;
+            _errorMessage = string.Empty;
+            var rooms = await AdminService.GetAllRoomTemplatesAsync();
+            _rooms = rooms ?? new List<RoomTemplate>();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Erreur lors du chargement : {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void ShowCreateModal()
+    {
+        _currentRoom = new RoomTemplate { IsActive = true };
+        _isEditMode = false;
+        _showModal = true;
+        _errorMessage = string.Empty;
+        _successMessage = string.Empty;
+    }
+
+    private void ShowEditModal(RoomTemplate room)
+    {
+        _currentRoom = new RoomTemplate
+        {
+            Id = room.Id,
+            Name = room.Name,
+            Description = room.Description,
+            Type = room.Type,
+            IsActive = room.IsActive
+        };
+        _isEditMode = true;
+        _showModal = true;
+        _errorMessage = string.Empty;
+        _successMessage = string.Empty;
+    }
+
+    private void ShowDeleteModal(RoomTemplate room)
+    {
+        _roomToDelete = room;
+        _showDeleteModal = true;
+        _errorMessage = string.Empty;
+        _successMessage = string.Empty;
+    }
+
+    private void HideModal()
+    {
+        _showModal = false;
+        _currentRoom = new();
+    }
+
+    private void HideDeleteModal()
+    {
+        _showDeleteModal = false;
+        _roomToDelete = null;
+    }
+
+    private async Task HandleSaveRoom()
+    {
+        try
+        {
+            _isSaving = true;
+            _errorMessage = string.Empty;
+            _successMessage = string.Empty;
+
+            if (_isEditMode)
+            {
+                await AdminService.UpdateRoomTemplateAsync(_currentRoom.Id, _currentRoom);
+                _successMessage = "Salle modifiée avec succès !";
+            }
+            else
+            {
+                await AdminService.CreateRoomTemplateAsync(_currentRoom);
+                _successMessage = "Salle créée avec succès !";
+            }
+
+            await LoadRooms();
+            HideModal();
+            
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(2000);
+                _successMessage = string.Empty;
+                await InvokeAsync(StateHasChanged);
+            });
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Erreur lors de l'enregistrement : {ex.Message}";
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private async Task ConfirmDelete()
+    {
+        if (_roomToDelete == null) return;
+
+        try
+        {
+            _isDeleting = true;
+            _errorMessage = string.Empty;
+            _successMessage = string.Empty;
+
+            var success = await AdminService.DeleteRoomTemplateAsync(_roomToDelete.Id);
+            
+            if (success)
+            {
+                _successMessage = "Salle supprimée avec succès !";
+                await LoadRooms();
+                HideDeleteModal();
+                
+                await Task.Delay(3000);
+                _successMessage = string.Empty;
+            }
+            else
+            {
+                _errorMessage = "Erreur lors de la suppression de la salle.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Erreur lors de la suppression : {ex.Message}";
+        }
+        finally
+        {
+            _isDeleting = false;
+        }
+    }
+
+    private string GetRoomTypeClass(RoomType type)
+    {
+        return type switch
+        {
+            RoomType.Combat => "type-combat",
+            RoomType.Search => "type-search",
+            _ => ""
+        };
+    }
+
+    private string GetRoomTypeIcon(RoomType type)
+    {
+        return type switch
+        {
+            RoomType.Combat => "⚔️",
+            RoomType.Search => "🔍",
+            _ => ""
+        };
+    }
+
+    private async Task ToggleRoomActive(RoomTemplate room)
+    {
+        try
+        {
+            _isToggling = true;
+            _errorMessage = string.Empty;
+            _successMessage = string.Empty;
+
+            var updatedRoom = new RoomTemplate
+            {
+                Id = room.Id,
+                Name = room.Name,
+                Description = room.Description,
+                Type = room.Type,
+                IsActive = !room.IsActive
+            };
+
+            await AdminService.UpdateRoomTemplateAsync(room.Id, updatedRoom);
+            
+            _successMessage = updatedRoom.IsActive 
+                ? $"Salle '{room.Name}' activée !" 
+                : $"Salle '{room.Name}' désactivée !";
+            
+            await LoadRooms();
+            
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(2000);
+                _successMessage = string.Empty;
+                await InvokeAsync(StateHasChanged);
+            });
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Erreur lors du changement de statut : {ex.Message}";
+        }
+        finally
+        {
+            _isToggling = false;
+        }
+    }
+}
+

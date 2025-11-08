@@ -1,11 +1,12 @@
 @page "/admin-dashboard"
+@using BlazorGame.Client.Components.Admin
 
 @* Page de tableau de bord administrateur *@
 
 <PageTitle>Administration</PageTitle>
 
 <div class="h-full bg-medieval-dark/50 py-8">
-    <div class="container mx-auto px-4 max-w-4xl flex flex-col gap-8">
+    <div class="container mx-auto px-4 max-w-7xl flex flex-col gap-8">
         <div class="card text-center p-8 transform hover:scale-[1.02] transition-transform duration-300">
             <div class="flex justify-center items-center gap-4 mb-2">
                 <div class="h-1 flex-1 bg-medieval-accent/30"></div>
@@ -15,49 +16,58 @@
             <p class="text-medieval-light opacity-80 text-lg font-medieval">Gérez votre royaume avec sagesse</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="card p-6 transform hover:scale-[1.01] transition-transform duration-300">
-                <h3 class="text-lg mb-2 font-medieval text-medieval-accent">Nombre de joueurs</h3>
-                <p class="text-2xl font-bold font-medieval">-</p>
-            </div>
-            <div class="card p-6 transform hover:scale-[1.01] transition-transform duration-300">
-                <h3 class="text-lg mb-2 font-medieval text-medieval-accent">Parties finies</h3>
-                <p class="text-2xl font-bold font-medieval">-</p>
-            </div>
-            <div class="card p-6 transform hover:scale-[1.01] transition-transform duration-300">
-                <h3 class="text-lg mb-2 font-medieval text-medieval-accent">Donjons créés</h3>
-                <p class="text-2xl font-bold font-medieval">-</p>
-            </div>
+        @* Onglets de navigation *@
+        <div class="tabs-container">
+            <button class="tab-btn @(_activeTab == "rewards" ? "active" : "")" @onclick='() => SetActiveTab("rewards")'>
+                Récompenses
+            </button>
+            <button class="tab-btn @(_activeTab == "rooms" ? "active" : "")" @onclick='() => SetActiveTab("rooms")'>
+                Salles
+            </button>
+            <button class="tab-btn @(_activeTab == "players" ? "active" : "")" @onclick='() => SetActiveTab("players")'>
+                Joueurs
+            </button>
         </div>
 
-        <div class="card overflow-hidden p-6 transform hover:scale-[1.01] transition-transform duration-300">
-            <h2 class="text-xl mb-4 font-medieval text-medieval-accent">Gestion des joueurs</h2>
-            <div class="flex flex-wrap gap-4 justify-center">
-                <button class="btn-primary text-sm">
-                    Voir tous les joueurs
-                </button>
-                <button class="btn-secondary bg-yellow-700 hover:bg-yellow-600 text-sm">
-                    Bannir un joueur
-                </button>
-                <button class="btn-secondary bg-green-700 hover:bg-green-600 text-sm">
-                    Débannir un joueur
-                </button>
-            </div>
-        </div>
-
-        <div class="card overflow-hidden p-6 transform hover:scale-[1.01] transition-transform duration-300">
-            <h2 class="text-xl mb-4 font-medieval text-medieval-accent">Gestion du contenu</h2>
-            <div class="flex flex-wrap gap-4 justify-center">
-                <button class="btn-primary text-sm">
-                    Créer un donjon
-                </button>
-                <button class="btn-secondary bg-blue-700 hover:bg-blue-600 text-sm">
-                    Modifier un donjon
-                </button>
-                <button class="btn-secondary bg-red-700 hover:bg-red-600 text-sm">
-                    Supprimer un donjon
-                </button>
-            </div>
+        @* Contenu des onglets *@
+        <div class="tab-content">
+            @if (_activeTab == "rewards")
+            {
+                <GameRewardsManager />
+            }
+            else if (_activeTab == "rooms")
+            {
+                <RoomTemplateManager />
+            }
+            else if (_activeTab == "players")
+            {
+                <div class="card p-8 text-center">
+                    <h2 class="text-2xl mb-4 font-medieval text-medieval-accent">Gestion des joueurs</h2>
+                    <div class="flex flex-wrap gap-4 justify-center opacity-50">
+                        <button class="btn-primary text-sm" disabled>
+                            Voir tous les joueurs
+                        </button>
+                        <button class="btn-secondary bg-yellow-700 hover:bg-yellow-600 text-sm" disabled>
+                            Bannir un joueur
+                        </button>
+                        <button class="btn-secondary bg-green-700 hover:bg-green-600 text-sm" disabled>
+                            Débannir un joueur
+                        </button>
+                        <button class="btn-secondary bg-red-700 hover:bg-red-600 text-sm" disabled>
+                            Exporter la liste des joueurs
+                        </button>
+                    </div>
+                </div>
+            }
         </div>
     </div>
 </div>
+
+@code {
+    private string _activeTab = "rewards";
+
+    private void SetActiveTab(string tab)
+    {
+        _activeTab = tab;
+    }
+}
