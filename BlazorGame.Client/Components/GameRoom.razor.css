@@ -96,3 +96,59 @@
     border-color: #4444ff;
     box-shadow: 0 0 15px rgba(68, 68, 255, 0.3);
 }
+
+.action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.action-btn:disabled:hover {
+    transform: none;
+    background-color: rgba(0, 0, 0, 0.5);
+    box-shadow: none;
+}
+
+.action-result {
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    text-align: center;
+    margin: 1rem 0;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.result-success {
+    background-color: rgba(68, 255, 68, 0.2);
+    border: 2px solid rgba(68, 255, 68, 0.5);
+}
+
+.result-danger {
+    background-color: rgba(255, 68, 68, 0.2);
+    border: 2px solid rgba(255, 68, 68, 0.5);
+}
+
+.result-warning {
+    background-color: rgba(255, 200, 68, 0.2);
+    border: 2px solid rgba(255, 200, 68, 0.5);
+}
+
+.continue-btn {
+    min-height: auto;
+    padding: 1rem 3rem;
+    background: linear-gradient(135deg, rgba(139, 69, 19, 0.6), rgba(160, 82, 45, 0.6));
+}
+
+.continue-btn:hover {
+    background: linear-gradient(135deg, rgba(139, 69, 19, 0.8), rgba(160, 82, 45, 0.8));
+    box-shadow: 0 0 20px rgba(218, 165, 32, 0.5);
+}

@@ -1,4 +1,9 @@
 @page "/history"
+@using BlazorGame.Client.Services
+@using SharedModels.Entities
+@using SharedModels.Enums
+@inject GameService GameService
+@inject NavigationManager NavigationManager
 
 @* Page d'historique des aventures de l'utilisateur *@
 
@@ -15,30 +20,184 @@
             <p class="text-medieval-light opacity-80 text-lg font-medieval">Revivez vos exploits passés</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div class="card p-6 transform hover:scale-[1.01] transition-transform duration-300">
-                <h3 class="text-lg mb-2 font-medieval text-medieval-accent">Parties jouées</h3>
-                <p class="text-2xl font-bold font-medieval">-</p>
+        @if (_isLoading)
+        {
+            <div class="text-center text-medieval-light">
+                <p class="text-2xl">Chargement...</p>
             </div>
-            <div class="card p-6 transform hover:scale-[1.01] transition-transform duration-300">
-                <h3 class="text-lg mb-2 font-medieval text-medieval-accent">Score total</h3>
-                <p class="text-2xl font-bold font-medieval">-</p>
+        }
+        else
+        {
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="card p-6 transform hover:scale-[1.01] transition-transform duration-300">
+                    <h3 class="text-lg mb-2 font-medieval text-medieval-accent">Parties jouées</h3>
+                    <p class="text-2xl font-bold font-medieval">@_sessions.Count</p>
+                </div>
+                <div class="card p-6 transform hover:scale-[1.01] transition-transform duration-300">
+                    <h3 class="text-lg mb-2 font-medieval text-medieval-accent">Score total</h3>
+                    <p class="text-2xl font-bold font-medieval">@_totalScore</p>
+                    <p class="text-xs text-medieval-light opacity-70 mt-2">* Parties abandonnées exclues</p>
+                </div>
+                <div class="card p-6 transform hover:scale-[1.01] transition-transform duration-300">
+                    <h3 class="text-lg mb-2 font-medieval text-medieval-accent">Victoires</h3>
+                    <p class="text-2xl font-bold font-medieval text-green-500">@_victories</p>
+                </div>
+                <div class="card p-6 transform hover:scale-[1.01] transition-transform duration-300">
+                    <h3 class="text-lg mb-2 font-medieval text-medieval-accent">Défaites</h3>
+                    <p class="text-2xl font-bold font-medieval text-red-500">@_defeats</p>
+                </div>
             </div>
-            <div class="card p-6 transform hover:scale-[1.01] transition-transform duration-300">
-                <h3 class="text-lg mb-2 font-medieval text-medieval-accent">Victoires</h3>
-                <p class="text-2xl font-bold font-medieval">-</p>
-            </div>
-            <div class="card p-6 transform hover:scale-[1.01] transition-transform duration-300">
-                <h3 class="text-lg mb-2 font-medieval text-medieval-accent">Défaites</h3>
-                <p class="text-2xl font-bold font-medieval">-</p>
-            </div>
-        </div>
 
-        <div class="card overflow-hidden p-6 transform hover:scale-[1.01] transition-transform duration-300">
-            <h2 class="text-xl mb-4 font-medieval text-medieval-accent text-center">Dernières aventures</h2>
-            <div class="text-center text-medieval-light italic font-medieval text-sm">
-                Aucune aventure à afficher pour le moment
+            <div class="card overflow-hidden p-6 transform hover:scale-[1.01] transition-transform duration-300">
+                <h2 class="text-xl mb-4 font-medieval text-medieval-accent text-center">Dernières aventures</h2>
+                
+                @if (_sessions.Count == 0)
+                {
+                    <div class="text-center text-medieval-light italic font-medieval text-sm">
+                        Aucune aventure à afficher pour le moment
+                    </div>
+                }
+                else
+                {
+                    <div class="space-y-4">
+                        @foreach (var session in _sessions)
+                        {
+                            <div class="history-item @GetStatusClass(session.Status) @(session.Status == GameStatus.InProgress ? "clickable" : "")" 
+                                 @onclick="() => HandleSessionClick(session)">
+                                <div class="flex justify-between items-center mb-2">
+                                    <div>
+                                        <span class="font-medieval text-lg text-medieval-accent">@GetStatusText(session.Status)</span>
+                                        @if (session.Status == GameStatus.Abandoned)
+                                        {
+                                            <span class="text-xs text-yellow-500 ml-2">(non comptabilisé)</span>
+                                        }
+                                        @if (session.Status == GameStatus.InProgress)
+                                        {
+                                            <span class="text-xs text-blue-400 ml-2 font-bold">Cliquez pour reprendre</span>
+                                        }
+                                    </div>
+                                    <span class="text-sm text-medieval-light">@session.StartTime.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</span>
+                                </div>
+                                <div class="grid grid-cols-4 gap-4 text-center">
+                                    <div>
+                                        <span class="text-sm text-medieval-light">Score</span>
+                                        <p class="text-xl font-bold font-medieval @(session.Status == GameStatus.Abandoned ? "opacity-50" : "")">@session.Score</p>
+                                    </div>
+                                    <div>
+                                        <span class="text-sm text-medieval-light">PV finaux</span>
+                                        <p class="text-xl font-bold font-medieval @GetHealthColorClass(session.CurrentHealth)">@session.CurrentHealth</p>
+                                    </div>
+                                    <div>
+                                        <span class="text-sm text-medieval-light">Salles</span>
+                                        <p class="text-xl font-bold font-medieval">@session.CurrentRoomIndex/@session.TotalRooms</p>
+                                    </div>
+                                    <div>
+                                        <span class="text-sm text-medieval-light">Durée</span>
+                                        <p class="text-xl font-bold font-medieval">@GetDuration(session)</p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
             </div>
-        </div>
+        }
     </div>
 </div>
+
+@code {
+    private bool _isLoading = true;
+    private List<GameSession> _sessions = new();
+    private int _totalScore;
+    private int _victories;
+    private int _defeats;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadHistory();
+    }
+
+    private async Task LoadHistory()
+    {
+        try
+        {
+            var playerId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+            var sessions = await GameService.GetPlayerSessionsAsync(playerId);
+            
+            if (sessions != null)
+            {
+                _sessions = sessions;
+                _totalScore = _sessions
+                    .Where(s => s.Status != GameStatus.Abandoned)
+                    .Sum(s => s.Score);
+                _victories = _sessions.Count(s => s.Status == GameStatus.Completed);
+                _defeats = _sessions.Count(s => s.Status == GameStatus.Failed);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors du chargement de l'historique: {ex.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private string GetStatusText(GameStatus status)
+    {
+        return status switch
+        {
+            GameStatus.Completed => "Victoire",
+            GameStatus.Failed => "Défaite",
+            GameStatus.Abandoned => "Abandonné",
+            GameStatus.InProgress => "En cours",
+            _ => "Inconnu"
+        };
+    }
+
+    private string GetStatusClass(GameStatus status)
+    {
+        return status switch
+        {
+            GameStatus.Completed => "status-victory",
+            GameStatus.Failed => "status-defeat",
+            GameStatus.Abandoned => "status-abandoned",
+            GameStatus.InProgress => "status-progress",
+            _ => ""
+        };
+    }
+
+    private string GetHealthColorClass(int health)
+    {
+        return health switch
+        {
+            <= 30 => "text-red-500",
+            <= 60 => "text-yellow-500",
+            _ => "text-green-500"
+        };
+    }
+
+    private string GetDuration(GameSession session)
+    {
+        if (!session.EndTime.HasValue)
+            return "-";
+            
+        var duration = session.EndTime.Value - session.StartTime;
+        
+        if (duration.TotalMinutes < 1)
+            return $"{(int)duration.TotalSeconds}s";
+        if (duration.TotalHours < 1)
+            return $"{(int)duration.TotalMinutes}min";
+            
+        return $"{(int)duration.TotalHours}h{duration.Minutes}min";
+    }
+
+    private void HandleSessionClick(GameSession session)
+    {
+        if (session.Status == GameStatus.InProgress)
+        {
+            NavigationManager.NavigateTo("/new-adventure");
+        }
+    }
+}

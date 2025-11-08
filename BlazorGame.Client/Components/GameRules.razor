@@ -1,3 +1,6 @@
+@using BlazorGame.Client.Services
+@using SharedModels.Entities
+@inject GameService GameService
 @namespace BlazorGame.Client.Components
 
 @* Composant de règles de jeu *@
@@ -17,7 +20,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div class="text-left">
                     <h3 class="text-lg mb-2 font-medieval text-medieval-accent">L'Aventure</h3>
-                    <p class="text-medieval-light text-sm">Explorez un donjon unique généré pour vous ! Traversez jusqu'à 5 salles mystérieuses, chacune avec ses propres défis et trésors.</p>
+                    <p class="text-medieval-light text-sm">Explorez un donjon unique généré pour vous ! Traversez @(_config?.NumberOfRooms ?? 5) salles mystérieuses, chacune avec ses propres défis et trésors.</p>
                 </div>
                 <div class="text-left">
                     <h3 class="text-lg mb-2 font-medieval text-medieval-accent">Les Choix</h3>
@@ -34,35 +37,42 @@
             </div>
 
             <div class="mt-8">
-                <p class="text-medieval-light text-center text-sm">Vous commencez avec <span class="text-medieval-accent font-medieval">100 points de vie</span>. Si vos points de vie tombent à 0, l'aventure se termine !</p>
+                @if (_config != null)
+                {
+                    <p class="text-medieval-light text-center text-sm">Vous commencez avec <span class="text-medieval-accent font-medieval">@_config.StartingHealth points de vie</span>. Si vos points de vie tombent à 0, l'aventure se termine !</p>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                    <div class="card p-4 transform hover:scale-[1.01] transition-transform duration-300">
-                        <h4 class="text-lg mb-2 font-medieval text-medieval-accent">Combattre</h4>
-                        <ul class="text-medieval-light space-y-1 list-disc list-inside text-sm">
-                            <li>Victoire : +100 points</li>
-                            <li>Défaite : -50 points et -30 points de vie</li>
-                        </ul>
-                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                        <div class="card p-4 transform hover:scale-[1.01] transition-transform duration-300">
+                            <h4 class="text-lg mb-2 font-medieval text-medieval-accent">Combattre</h4>
+                            <ul class="text-medieval-light space-y-1 list-disc list-inside text-sm">
+                                <li>Victoire : +@_config.MinCombatVictoryPoints à +@_config.MaxCombatVictoryPoints points</li>
+                                <li>Défaite : @_config.MinCombatDefeatPoints à @_config.MaxCombatDefeatPoints points et @_config.MinCombatDefeatHealthLoss à @_config.MaxCombatDefeatHealthLoss PV</li>
+                            </ul>
+                        </div>
 
-                    <div class="card p-4 transform hover:scale-[1.01] transition-transform duration-300">
-                        <h4 class="text-lg mb-2 font-medieval text-medieval-accent">Fouiller</h4>
-                        <ul class="text-medieval-light space-y-1 list-disc list-inside text-sm">
-                            <li>Trésor : +75 points</li>
-                            <li>Potion : +40 points de vie</li>
-                            <li>Piège : -25 points et -20 points de vie</li>
-                        </ul>
-                    </div>
+                        <div class="card p-4 transform hover:scale-[1.01] transition-transform duration-300">
+                            <h4 class="text-lg mb-2 font-medieval text-medieval-accent">Fouiller</h4>
+                            <ul class="text-medieval-light space-y-1 list-disc list-inside text-sm">
+                                <li>Trésor : +@_config.MinTreasurePoints à +@_config.MaxTreasurePoints points</li>
+                                <li>Potion : +@_config.MinPotionHealthGain à +@_config.MaxPotionHealthGain points de vie</li>
+                                <li>Piège : @_config.MinTrapPoints à @_config.MaxTrapPoints points et @_config.MinTrapHealthLoss à @_config.MaxTrapHealthLoss PV</li>
+                            </ul>
+                        </div>
 
-                    <div class="card p-4 transform hover:scale-[1.01] transition-transform duration-300">
-                        <h4 class="text-lg mb-2 font-medieval text-medieval-accent">Fuir</h4>
-                        <ul class="text-medieval-light space-y-1 list-disc list-inside text-sm">
-                            <li>-15 points</li>
-                            <li>Aucun dégât</li>
-                            <li>Passage sûr à la salle suivante</li>
-                        </ul>
+                        <div class="card p-4 transform hover:scale-[1.01] transition-transform duration-300">
+                            <h4 class="text-lg mb-2 font-medieval text-medieval-accent">Fuir</h4>
+                            <ul class="text-medieval-light space-y-1 list-disc list-inside text-sm">
+                                <li>@_config.MinFleePoints à @_config.MaxFleePoints points</li>
+                                <li>Aucun dégât</li>
+                                <li>Passage sûr à la salle suivante</li>
+                            </ul>
+                        </div>
                     </div>
-                </div>
+                }
+                else
+                {
+                    <p class="text-medieval-light text-center text-sm">Chargement des règles du jeu...</p>
+                }
             </div>
         </div>
     </div>
@@ -83,6 +93,20 @@
 
     [Parameter]
     public EventCallback OnStartGameClick { get; set; }
+
+    private GameRewards? _config;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _config = await GameService.GetGameRewardsAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors du chargement de la configuration: {ex.Message}");
+        }
+    }
 
     private async Task OnStartGame()
     {

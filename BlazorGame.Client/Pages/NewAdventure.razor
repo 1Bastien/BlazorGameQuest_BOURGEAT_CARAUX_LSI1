@@ -1,10 +1,86 @@
 @page "/new-adventure"
+@using BlazorGame.Client.Services
+@using SharedModels.Entities
+@using SharedModels.Enums
+@inject GameService GameService
+@inject NavigationManager NavigationManager
 
 <PageTitle>Nouvelle Aventure</PageTitle>
 
 <div class="background-container">
     <div class="content-container">
-        @if (_isLoading)
+        @if (_isCheckingSession)
+        {
+            <div class="text-center text-medieval-light p-8">
+                <p class="text-2xl">Chargement...</p>
+            </div>
+        }
+        else if (_hasSessionInProgress && !_gameStarted && !_isLoading)
+        {
+            <div class="resume-game-container">
+                <div class="resume-game-content">
+                    <h1 class="font-medieval text-5xl mb-8 text-medieval-accent">Partie en cours</h1>
+                    <p class="text-medieval-light text-xl mb-8">
+                        Vous avez une partie en cours. Souhaitez-vous la reprendre ?
+                    </p>
+                    
+                    @if (_existingSession != null)
+                    {
+                        <div class="session-info">
+                            <div class="stat-item">
+                                <span class="stat-label">Points de vie</span>
+                                <span class="stat-value @GetHealthColorClass(_existingSession.CurrentHealth)">@_existingSession.CurrentHealth</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Score</span>
+                                <span class="stat-value text-medieval-accent">@_existingSession.Score</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Salle</span>
+                                <span class="stat-value text-medieval-light">@(_existingSession.CurrentRoomIndex + 1)/@_existingSession.TotalRooms</span>
+                            </div>
+                        </div>
+                    }
+                    
+                    <div class="flex gap-4 justify-center mt-8">
+                        <button class="medieval-button" @onclick="ResumeGame">
+                            Reprendre la partie
+                        </button>
+                        <button class="medieval-button secondary" @onclick="ShowNewGameConfirmation">
+                            Nouvelle partie
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            @* Modal de confirmation pour nouvelle partie *@
+            @if (_showNewGameModal)
+            {
+                <div class="modal-overlay" @onclick="HideNewGameConfirmation">
+                    <div class="modal-content" @onclick:stopPropagation="true">
+                        <h2 class="font-medieval text-3xl mb-4 text-medieval-accent">Nouvelle partie ?</h2>
+                        <p class="text-medieval-light mb-4">
+                            Vous avez déjà une partie en cours. Souhaitez-vous vraiment en démarrer une nouvelle ?
+                        </p>
+                        <div class="warning-box mb-6">
+                            <p class="text-yellow-500 font-bold mb-2">Attention</p>
+                            <p class="text-medieval-light text-sm">
+                                La partie en cours sera <strong>abandonnée</strong> et son score ne sera pas comptabilisé dans vos statistiques.
+                            </p>
+                        </div>
+                        <div class="flex gap-4 justify-center">
+                            <button class="medieval-button danger" @onclick="ConfirmNewGame">
+                                Oui, nouvelle partie
+                            </button>
+                            <button class="medieval-button" @onclick="HideNewGameConfirmation">
+                                Annuler
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else if (_isLoading)
         {
             <LoadingScreen OnContinueClick="StartAdventure" />
         }
@@ -12,9 +88,95 @@
         {
             <GameRules IsLoading="@_isLoading" OnStartGameClick="StartGame" />
         }
+        else if (_isGameOver)
+        {
+            <div class="game-over-container">
+                @if (_currentSession != null)
+                {
+                    <div class="game-over-content">
+                        <h1 class="font-medieval text-5xl mb-8 text-medieval-accent">
+                            @GetGameOverTitle()
+                        </h1>
+                        
+                        <div class="final-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Score Final</span>
+                                <span class="stat-value text-medieval-accent">@_currentSession.Score</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Points de Vie</span>
+                                <span class="stat-value @GetHealthColorClass()">@_currentSession.CurrentHealth</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Salles Explorées</span>
+                                <span class="stat-value text-medieval-light">@_currentSession.CurrentRoomIndex/@_currentSession.TotalRooms</span>
+                            </div>
+                        </div>
+                        
+                        <p class="text-medieval-light text-xl mb-8">
+                            @GetGameOverMessage()
+                        </p>
+                        
+                        <div class="flex gap-4 justify-center">
+                            <button class="medieval-button" @onclick="RestartGame">
+                                Nouvelle Aventure
+                            </button>
+                            <button class="medieval-button" @onclick="GoToHistory">
+                                Voir l'Historique
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
         else
         {
-            <GameRoom />
+            <div class="game-container">
+                <div class="abandon-button-container">
+                    <button class="abandon-btn" @onclick="ShowAbandonConfirmation" disabled="@_isProcessingAction">
+                        <span>Abandonner</span>
+                    </button>
+                </div>
+                
+                <GameRoom 
+                    CurrentRoom="@_currentRoomTemplate"
+                    CurrentHealth="@(_currentSession?.CurrentHealth ?? 100)"
+                    Score="@(_currentSession?.Score ?? 0)"
+                    CurrentRoomNumber="@GetCurrentRoomNumber()"
+                    TotalRooms="@(_currentSession?.TotalRooms ?? 0)"
+                    ActionResult="@_lastActionResult"
+                    IsGameOver="@_isGameOver"
+                    IsProcessing="@_isProcessingAction"
+                    OnActionSelected="HandleAction"
+                    OnContinue="LoadNextRoom" />
+            </div>
+
+            @if (_showAbandonModal)
+            {
+                <div class="modal-overlay" @onclick="HideAbandonConfirmation">
+                    <div class="modal-content" @onclick:stopPropagation="true">
+                        <h2 class="font-medieval text-3xl mb-4 text-medieval-accent">Abandonner la partie ?</h2>
+                        <p class="text-medieval-light mb-4">
+                            Êtes-vous sûr de vouloir abandonner cette partie ?
+                        </p>
+                        <div class="warning-box mb-6">
+                            <p class="text-yellow-500 font-bold mb-2">Attention</p>
+                            <p class="text-medieval-light text-sm">
+                                Si vous abandonnez, votre score ne sera <strong>pas comptabilisé</strong> dans vos statistiques globales.
+                                La partie restera visible dans l'historique mais n'affectera pas votre score total.
+                            </p>
+                        </div>
+                        <div class="flex gap-4 justify-center">
+                            <button class="medieval-button danger" @onclick="ConfirmAbandon">
+                                Oui, abandonner
+                            </button>
+                            <button class="medieval-button" @onclick="HideAbandonConfirmation">
+                                Annuler
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
         }
     </div>
 </div>
@@ -22,15 +184,261 @@
 @code {
     private bool _gameStarted;
     private bool _isLoading;
+    private bool _isGameOver;
+    private bool _isProcessingAction;
+    private bool _isCheckingSession = true;
+    private bool _hasSessionInProgress;
+    private bool _showAbandonModal;
+    private bool _showNewGameModal;
+    
+    private GameSession? _currentSession;
+    private GameSession? _existingSession;
+    private RoomTemplate? _currentRoomTemplate;
+    private GameAction? _lastActionResult;
+    private List<Guid> _roomIds = new();
+    private Guid _playerId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _playerId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        
+        await CheckExistingSession();
+        
+        _isCheckingSession = false;
+    }
+
+    private async Task CheckExistingSession()
+    {
+        try
+        {
+            _existingSession = await GameService.GetPlayerCurrentSessionAsync(_playerId);
+            _hasSessionInProgress = _existingSession != null;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors de la vérification de session: {ex.Message}");
+            _hasSessionInProgress = false;
+        }
+    }
+
+    private async Task ResumeGame()
+    {
+        if (_existingSession == null) return;
+        
+        _currentSession = _existingSession;
+        _roomIds = GameService.GetGeneratedRoomIds(_currentSession.GeneratedRoomsJson);
+        
+        await LoadCurrentRoom();
+        
+        _hasSessionInProgress = false;
+        _gameStarted = true;
+    }
+
+    private void ShowNewGameConfirmation()
+    {
+        _showNewGameModal = true;
+    }
+
+    private void HideNewGameConfirmation()
+    {
+        _showNewGameModal = false;
+    }
+
+    private async Task ConfirmNewGame()
+    {
+        if (_existingSession != null)
+        {
+            await GameService.AbandonSessionAsync(_existingSession.Id);
+        }
+        
+        _showNewGameModal = false;
+        _hasSessionInProgress = false;
+        _existingSession = null;
+        
+        StateHasChanged();
+    }
 
     private void StartGame()
     {
         _isLoading = true;
     }
 
-    private void StartAdventure()
+    private async Task StartAdventure()
     {
         _isLoading = false;
         _gameStarted = true;
+        
+        try
+        {
+            _currentSession = await GameService.StartNewGameAsync(_playerId);
+            
+            if (_currentSession != null)
+            {
+                _roomIds = GameService.GetGeneratedRoomIds(_currentSession.GeneratedRoomsJson);
+                
+                await LoadCurrentRoom();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors du démarrage du jeu: {ex.Message}");
+        }
+    }
+
+    private async Task LoadCurrentRoom()
+    {
+        if (_currentSession == null || _roomIds.Count == 0) return;
+        
+        try
+        {
+            var currentIndex = _currentSession.CurrentRoomIndex;
+            if (currentIndex < _roomIds.Count)
+            {
+                var roomId = _roomIds[currentIndex];
+                _currentRoomTemplate = await GameService.GetRoomTemplateAsync(roomId);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors du chargement de la salle: {ex.Message}");
+        }
+    }
+
+    private async Task HandleAction(ActionType actionType)
+    {
+        if (_currentSession == null || _isProcessingAction) return;
+        
+        _isProcessingAction = true;
+        
+        try
+        {
+            var response = await GameService.PerformActionAsync(_currentSession.Id, actionType);
+            
+            if (response != null)
+            {
+                _lastActionResult = response.Action;
+                _currentSession = response.UpdatedSession;
+                
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors de l'action: {ex.Message}");
+        }
+        finally
+        {
+            _isProcessingAction = false;
+        }
+    }
+
+    private async Task LoadNextRoom()
+    {
+        if (_currentSession != null && _currentSession.Status != GameStatus.InProgress)
+        {
+            _isGameOver = true;
+            _lastActionResult = null;
+            return;
+        }
+        
+        if (_isGameOver) return;
+        
+        _lastActionResult = null;
+        
+        await LoadCurrentRoom();
+    }
+
+    private async Task RestartGame()
+    {
+        _gameStarted = false;
+        _isGameOver = false;
+        _currentSession = null;
+        _currentRoomTemplate = null;
+        _lastActionResult = null;
+        _roomIds.Clear();
+        
+        _isCheckingSession = true;
+        await CheckExistingSession();
+        _isCheckingSession = false;
+    }
+
+    private void ShowAbandonConfirmation()
+    {
+        _showAbandonModal = true;
+    }
+
+    private void HideAbandonConfirmation()
+    {
+        _showAbandonModal = false;
+    }
+
+    private async Task ConfirmAbandon()
+    {
+        if (_currentSession == null) return;
+        
+        try
+        {
+            await GameService.AbandonSessionAsync(_currentSession.Id);
+            _showAbandonModal = false;
+            NavigationManager.NavigateTo("/history");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors de l'abandon: {ex.Message}");
+        }
+    }
+
+    private void GoToHistory()
+    {
+        NavigationManager.NavigateTo("/history");
+    }
+
+    private string GetGameOverTitle()
+    {
+        if (_currentSession == null) return "Partie Terminée";
+        
+        return _currentSession.Status switch
+        {
+            GameStatus.Completed => "Victoire !",
+            GameStatus.Failed => "Défaite...",
+            GameStatus.Abandoned => "Partie Abandonnée",
+            _ => "Partie Terminée"
+        };
+    }
+
+    private string GetGameOverMessage()
+    {
+        if (_currentSession == null) return "";
+        
+        return _currentSession.Status switch
+        {
+            GameStatus.Completed => "Félicitations ! Vous avez terminé toutes les salles avec succès !",
+            GameStatus.Failed => "Vos points de vie sont tombés à 0. Vous avez échoué dans votre quête...",
+            GameStatus.Abandoned => "Vous avez abandonné votre quête.",
+            _ => ""
+        };
+    }
+
+    private string GetHealthColorClass()
+    {
+        if (_currentSession == null) return "";
+        return GetHealthColorClass(_currentSession.CurrentHealth);
+    }
+    
+    private string GetHealthColorClass(int health)
+    {
+        return health switch
+        {
+            <= 30 => "text-red-500",
+            <= 60 => "text-yellow-500",
+            _ => "text-green-500"
+        };
+    }
+
+    private int GetCurrentRoomNumber()
+    {
+        if (_currentSession == null) return 0;
+        
+        var roomNumber = _currentSession.CurrentRoomIndex + 1;
+        return Math.Min(roomNumber, _currentSession.TotalRooms);
     }
 }

@@ -23,3 +23,204 @@
     flex: 1;
     min-width: 0;
 }
+
+.game-over-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    padding: 2rem;
+}
+
+.game-over-content {
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 1rem;
+    padding: 3rem;
+    max-width: 800px;
+    text-align: center;
+    border: 2px solid rgba(218, 165, 32, 0.3);
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.final-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin: 2rem 0;
+    padding: 2rem;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 0.5rem;
+}
+
+.final-stats .stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.final-stats .stat-label {
+    color: var(--medieval-light);
+    font-size: 1rem;
+    opacity: 0.8;
+}
+
+.final-stats .stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.medieval-button {
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, rgba(139, 69, 19, 0.6), rgba(160, 82, 45, 0.6));
+    border: 1px solid rgba(218, 165, 32, 0.5);
+    border-radius: 0.5rem;
+    color: var(--medieval-accent);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.medieval-button:hover {
+    background: linear-gradient(135deg, rgba(139, 69, 19, 0.8), rgba(160, 82, 45, 0.8));
+    box-shadow: 0 0 20px rgba(218, 165, 32, 0.5);
+    transform: translateY(-2px);
+}
+
+.medieval-button.secondary {
+    background: linear-gradient(135deg, rgba(60, 60, 60, 0.6), rgba(80, 80, 80, 0.6));
+    border-color: rgba(150, 150, 150, 0.5);
+}
+
+.medieval-button.secondary:hover {
+    background: linear-gradient(135deg, rgba(60, 60, 60, 0.8), rgba(80, 80, 80, 0.8));
+    box-shadow: 0 0 20px rgba(150, 150, 150, 0.5);
+}
+
+.medieval-button.danger {
+    background: linear-gradient(135deg, rgba(139, 0, 0, 0.6), rgba(178, 34, 34, 0.6));
+    border-color: rgba(255, 68, 68, 0.5);
+}
+
+.medieval-button.danger:hover {
+    background: linear-gradient(135deg, rgba(139, 0, 0, 0.8), rgba(178, 34, 34, 0.8));
+    box-shadow: 0 0 20px rgba(255, 68, 68, 0.5);
+}
+
+.resume-game-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    padding: 2rem;
+}
+
+.resume-game-content {
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 1rem;
+    padding: 3rem;
+    max-width: 800px;
+    text-align: center;
+    border: 2px solid rgba(218, 165, 32, 0.3);
+    animation: fadeIn 0.5s ease;
+}
+
+.session-info {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin: 2rem 0;
+    padding: 2rem;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 0.5rem;
+}
+
+.session-info .stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.session-info .stat-label {
+    color: var(--medieval-light);
+    font-size: 1rem;
+    opacity: 0.8;
+}
+
+.session-info .stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.abandon-button-container {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem;
+}
+
+.abandon-btn {
+    padding: 0.75rem 1.5rem;
+    background-color: rgba(139, 0, 0, 0.6);
+    border: 1px solid rgba(255, 68, 68, 0.5);
+    border-radius: 0.5rem;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.abandon-btn:hover:not(:disabled) {
+    background-color: rgba(139, 0, 0, 0.8);
+    box-shadow: 0 0 15px rgba(255, 68, 68, 0.5);
+    transform: translateY(-2px);
+}
+
+.abandon-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+    background-color: rgba(20, 20, 20, 0.95);
+    border: 2px solid rgba(218, 165, 32, 0.5);
+    border-radius: 1rem;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 0 30px rgba(218, 165, 32, 0.3);
+}
+
+.game-container {
+    width: 100%;
+}
+
+.warning-box {
+    background-color: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 0.5rem;
+    padding: 1rem;
+}

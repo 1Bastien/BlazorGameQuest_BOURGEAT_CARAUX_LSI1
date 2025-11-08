@@ -1,49 +1,198 @@
+@using SharedModels.Entities
+@using SharedModels.Enums
+
 @* Composant représentant une salle de jeu *@
 
-@* Exemple d'une salle de jeu
- * Les salles pourront de type 'combat' ou 'fouille', 
- * le joueurs pourra choisir de combattre ou fouiller, selon le type de salle ou fuir.
- * L'administrateur pourra crééer, modifier ou supprimer des salles en choisissant 
- * une description differente ou des gains differents mais en respectant le type de la salle.
+@* Les salles peuvent être de type 'combat' ou 'fouille', 
+ * le joueur peut choisir de combattre ou fouiller, selon le type de salle ou fuir.
  *@
 
-<div class="game-room">
-    <div class="room-header">
-        <div class="player-stats">
-            <div class="stat-item">
-                <span class="stat-label">Points de vie :</span>
-                <span class="stat-value">100</span>
+@if (CurrentRoom != null)
+{
+    <div class="game-room">
+        <div class="room-header">
+            <div class="player-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Points de vie :</span>
+                    <span class="stat-value @GetHealthColorClass()">@CurrentHealth</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Score :</span>
+                    <span class="stat-value">@Score</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Salle :</span>
+                    <span class="stat-value">@CurrentRoomNumber/@TotalRooms</span>
+                </div>
             </div>
-            <div class="stat-item">
-                <span class="stat-label">Score :</span>
-                <span class="stat-value">0</span>
+        </div>
+
+        <div class="room-content">
+            <div class="room-description">
+                <h2 class="font-medieval text-4xl mb-4">@CurrentRoom.Name</h2>
+                <p class="text-medieval-light">
+                    @CurrentRoom.Description
+                </p>
             </div>
-            <div class="stat-item">
-                <span class="stat-label">Salle :</span>
-                <span class="stat-value">1/5</span>
-            </div>
+
+            @if (ActionResult != null)
+            {
+                <div class="action-result @GetResultClass()">
+                    <h3 class="font-medieval text-2xl mb-2">@GetResultTitle()</h3>
+                    <p class="text-medieval-light">@GetResultMessage()</p>
+                </div>
+            }
+
+            @if (ActionResult == null)
+            {
+                <div class="room-actions">
+                    @if (CurrentRoom.Type == RoomType.Combat)
+                    {
+                        <button class="action-btn combat-btn" @onclick="() => HandleActionClick(ActionType.Combat)" disabled="@IsProcessing">
+                            <span class="text-2xl font-medieval text-medieval-accent">Combattre</span>
+                            <span class="text-sm text-medieval-light opacity-80">Affrontez le danger avec courage</span>
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="action-btn search-btn" @onclick="() => HandleActionClick(ActionType.Search)" disabled="@IsProcessing">
+                            <span class="text-2xl font-medieval text-medieval-accent">Fouiller</span>
+                            <span class="text-sm text-medieval-light opacity-80">Examinez la salle avec précaution</span>
+                        </button>
+                    }
+
+                    <button class="action-btn flee-btn" @onclick="() => HandleActionClick(ActionType.Flee)" disabled="@IsProcessing">
+                        <span class="text-2xl font-medieval text-medieval-accent">Fuir</span>
+                        <span class="text-sm text-medieval-light opacity-80">Passez à la salle suivante prudemment</span>
+                    </button>
+                </div>
+            }
+
+            @if (ActionResult != null && !IsGameOver)
+            {
+                <div class="mt-6 text-center">
+                    <button class="action-btn continue-btn" @onclick="OnContinue">
+                        <span class="text-2xl font-medieval text-medieval-accent">Continuer</span>
+                    </button>
+                </div>
+            }
         </div>
     </div>
-
-    <div class="room-content">
-        <div class="room-description">
-            <h2 class="font-medieval text-4xl mb-4">Salle du Destin</h2>
-            <p class="text-medieval-light">
-                Vous entrez dans une salle mystérieuse. Les murs sont couverts de runes anciennes qui brillent faiblement.
-                Au centre de la pièce se trouve un coffre en bois massif ...
-            </p>
-        </div>
-
-        <div class="room-actions">
-            <button class="action-btn search-btn">
-                <span class="text-2xl font-medieval text-medieval-accent">Fouiller</span>
-                <span class="text-sm text-medieval-light opacity-80">Examinez le coffre mystérieux</span>
-            </button>
-
-            <button class="action-btn flee-btn">
-                <span class="text-2xl font-medieval text-medieval-accent">Fuir</span>
-                <span class="text-sm text-medieval-light opacity-80">Passez à la salle suivante prudemment</span>
-            </button>
-        </div>
+}
+else
+{
+    <div class="text-center text-medieval-light">
+        <p>Chargement de la salle...</p>
     </div>
-</div>
+}
+
+@code {
+    [Parameter]
+    public RoomTemplate? CurrentRoom { get; set; }
+    
+    [Parameter]
+    public int CurrentHealth { get; set; }
+    
+    [Parameter]
+    public int Score { get; set; }
+    
+    [Parameter]
+    public int CurrentRoomNumber { get; set; }
+    
+    [Parameter]
+    public int TotalRooms { get; set; }
+    
+    [Parameter]
+    public GameAction? ActionResult { get; set; }
+    
+    [Parameter]
+    public bool IsGameOver { get; set; }
+    
+    [Parameter]
+    public bool IsProcessing { get; set; }
+    
+    [Parameter]
+    public EventCallback<ActionType> OnActionSelected { get; set; }
+    
+    [Parameter]
+    public EventCallback OnContinue { get; set; }
+
+    private async Task HandleActionClick(ActionType actionType)
+    {
+        await OnActionSelected.InvokeAsync(actionType);
+    }
+
+    private string GetHealthColorClass()
+    {
+        return CurrentHealth switch
+        {
+            <= 30 => "text-red-500",
+            <= 60 => "text-yellow-500",
+            _ => "text-green-500"
+        };
+    }
+
+    private string GetResultClass()
+    {
+        if (ActionResult == null) return "";
+        
+        return ActionResult.Result switch
+        {
+            GameActionResult.Victory => "result-success",
+            GameActionResult.FoundTreasure => "result-success",
+            GameActionResult.FoundPotion => "result-success",
+            GameActionResult.Defeat => "result-danger",
+            GameActionResult.TriggeredTrap => "result-danger",
+            GameActionResult.Escaped => "result-warning",
+            _ => ""
+        };
+    }
+
+    private string GetResultTitle()
+    {
+        if (ActionResult == null) return "";
+        
+        return ActionResult.Result switch
+        {
+            GameActionResult.Victory => "Victoire !",
+            GameActionResult.Defeat => "Défaite...",
+            GameActionResult.FoundTreasure => "Trésor !",
+            GameActionResult.FoundPotion => "Potion !",
+            GameActionResult.TriggeredTrap => "Piège !",
+            GameActionResult.Escaped => "Fuite",
+            _ => "Résultat"
+        };
+    }
+
+    private string GetResultMessage()
+    {
+        if (ActionResult == null) return "";
+        
+        var pointsText = ActionResult.PointsChange switch
+        {
+            > 0 => $"+{ActionResult.PointsChange} points",
+            < 0 => $"{ActionResult.PointsChange} points",
+            _ => ""
+        };
+        
+        var healthText = ActionResult.HealthChange switch
+        {
+            > 0 => $"+{ActionResult.HealthChange} PV",
+            < 0 => $"{ActionResult.HealthChange} PV",
+            _ => ""
+        };
+        
+        var separator = !string.IsNullOrEmpty(pointsText) && !string.IsNullOrEmpty(healthText) ? " | " : "";
+        
+        return ActionResult.Result switch
+        {
+            GameActionResult.Victory => $"Vous avez vaincu votre adversaire ! {pointsText}",
+            GameActionResult.Defeat => $"Vous avez été vaincu... {pointsText}{separator}{healthText}",
+            GameActionResult.FoundTreasure => $"Vous avez trouvé un trésor ! {pointsText}",
+            GameActionResult.FoundPotion => $"Vous avez trouvé une potion ! {healthText}",
+            GameActionResult.TriggeredTrap => $"Vous avez déclenché un piège ! {pointsText}{separator}{healthText}",
+            GameActionResult.Escaped => $"Vous fuyez prudemment vers la salle suivante. {pointsText}",
+            _ => ""
+        };
+    }
+}
