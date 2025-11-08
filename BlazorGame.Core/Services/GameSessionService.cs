@@ -1,6 +1,6 @@
 using System.Text.Json;
-using BlazorGame.Core.Data;
 using Microsoft.EntityFrameworkCore;
+using BlazorGame.Core.Data;
 using SharedModels.Entities;
 using SharedModels.Enums;
 
@@ -26,15 +26,6 @@ public class GameSessionService
         _rewardsService = rewardsService;
     }
 
-    /// Récupère toutes les sessions de jeu triées par date de début décroissante
-    public async Task<List<GameSession>> GetAllAsync()
-    {
-        return await _context.GameSessions
-            .Include(gs => gs.Player)
-            .OrderByDescending(gs => gs.StartTime)
-            .ToListAsync();
-    }
-
     /// Récupère une session de jeu par son identifiant
     public async Task<GameSession?> GetByIdAsync(Guid id)
     {
@@ -44,13 +35,13 @@ public class GameSessionService
             .FirstOrDefaultAsync(gs => gs.Id == id);
     }
 
-    /// Crée une nouvelle session de jeu avec des salles générées aléatoirement
+    /// Crée une nouvelle session de jeu avec un nombre fixe de salles générées aléatoirement
     public async Task<GameSession> CreateNewSessionAsync(Guid playerId)
     {
         var config = await _rewardsService.GetConfigAsync();
         if (config == null) throw new InvalidOperationException("GameRewards not configured");
 
-        var roomCount = _random.Next(1, config.MaxRooms + 1);
+        var roomCount = config.NumberOfRooms;
 
         var allTemplates = await _roomService.GetAllAsync();
         if (allTemplates.Count == 0) throw new InvalidOperationException("No room templates available");
@@ -119,5 +110,26 @@ public class GameSessionService
         return session.Status == GameStatus.InProgress 
                && session.CurrentHealth > 0 
                && session.CurrentRoomIndex < session.TotalRooms;
+    }
+
+    /// Récupère toutes les sessions d'un joueur triées par date décroissante
+    public async Task<List<GameSession>> GetPlayerSessionsAsync(Guid playerId)
+    {
+        return await _context.GameSessions
+            .Include(gs => gs.Player)
+            .Where(gs => gs.PlayerId == playerId)
+            .OrderByDescending(gs => gs.StartTime)
+            .ToListAsync();
+    }
+
+    /// Récupère la session en cours d'un joueur
+    public async Task<GameSession?> GetPlayerCurrentSessionAsync(Guid playerId)
+    {
+        return await _context.GameSessions
+            .Include(gs => gs.Player)
+            .Include(gs => gs.Actions)
+            .Where(gs => gs.PlayerId == playerId && gs.Status == GameStatus.InProgress)
+            .OrderByDescending(gs => gs.LastSaveTime)
+            .FirstOrDefaultAsync();
     }
 }

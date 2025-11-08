@@ -83,6 +83,24 @@ public class GameSessionsController : ControllerBase
         var actions = await _actionService.GetSessionActionsAsync(sessionId);
         return Ok(actions);
     }
+
+    /// Récupère toutes les sessions d'un joueur (historique complet)
+    [HttpGet("player/{playerId}")]
+    public async Task<ActionResult<List<GameSession>>> GetPlayerSessions(Guid playerId)
+    {
+        var sessions = await _sessionService.GetPlayerSessionsAsync(playerId);
+        return Ok(sessions);
+    }
+
+    /// Récupère la session en cours d'un joueur (s'il y en a une)
+    [HttpGet("player/{playerId}/current")]
+    public async Task<ActionResult<GameSession>> GetPlayerCurrentSession(Guid playerId)
+    {
+        var session = await _sessionService.GetPlayerCurrentSessionAsync(playerId);
+        if (session == null) return NotFound();
+        
+        return Ok(session);
+    }
 }
 
 /// DTO pour créer une nouvelle session de jeu

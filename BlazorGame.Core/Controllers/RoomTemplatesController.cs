@@ -19,11 +19,19 @@ public class RoomTemplatesController : ControllerBase
         _service = service;
     }
 
-    /// Récupère tous les modèles de salles de fouille
+    /// Récupère tous les modèles de salles de fouille actives
     [HttpGet]
     public async Task<ActionResult<List<RoomTemplate>>> GetAll()
     {
         var templates = await _service.GetAllAsync();
+        return Ok(templates);
+    }
+
+    /// Récupère tous les modèles de salles pour l'administration
+    [HttpGet("admin")]
+    public async Task<ActionResult<List<RoomTemplate>>> GetAllForAdmin()
+    {
+        var templates = await _service.GetAllIncludingInactiveAsync();
         return Ok(templates);
     }
 

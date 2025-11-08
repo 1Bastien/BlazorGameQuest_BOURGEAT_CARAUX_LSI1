@@ -17,12 +17,18 @@ public class RoomTemplateService
         _context = context;
     }
 
-    /// Récupère tous les modèles de salles actifs
+    /// Récupère tous les modèles de salles actifs (pour le jeu)
     public async Task<List<RoomTemplate>> GetAllAsync()
     {
         return await _context.RoomTemplates
             .Where(r => r.IsActive)
             .ToListAsync();
+    }
+
+    /// Récupère tous les modèles de salles (actifs et inactifs) pour l'administration
+    public async Task<List<RoomTemplate>> GetAllIncludingInactiveAsync()
+    {
+        return await _context.RoomTemplates.ToListAsync();
     }
 
     /// Récupère un modèle de salle par son identifiant
