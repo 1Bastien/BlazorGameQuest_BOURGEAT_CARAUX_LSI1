@@ -82,13 +82,37 @@ Notre frontend est organisé en trois dossiers principaux :
 
 ## Stratégie de tests
 
-Les tests sont implémentés avec xUnit et une base de données InMemory.
+Les tests sont implémentés avec xUnit, Moq et une base de données InMemory. Le projet de tests est organisé en deux catégories :
+
+**Tests Core (BlazorGame.Core)** :
 
 - **GameSessionServiceTests** : création, mise à jour et abandon de sessions, gestion des états de jeu
 - **GameActionServiceTests** : traitement des actions (combat, fouille, fuite), calcul des points et de la vie, transitions d'état
 - **RoomTemplateServiceTests** : opérations CRUD sur les modèles de salles
 - **GameRewardsServiceTests** : récupération et mise à jour de la configuration des récompenses
+- **GameSessionsControllerTests** : tests des endpoints de gestion des sessions
+- **GameRewardsControllerTests** : tests des endpoints de configuration des récompenses
+- **RoomTemplatesControllerTests** : tests des endpoints CRUD des modèles de salles
 
-La validation des données est assurée par les annotations Data Annotation sur les entités.
+**Tests Client (BlazorGame.Client)** :
 
-Nous ajouterons les tests unitaires sur les prochaines méthodes des prochains services ainsi que des tests sur les controllers par la suite.
+- **GameServiceTests** : tests du service de gestion des parties côté client
+- **AdminServiceTests** : tests du service d'administration côté client
+
+La validation des données est assurée par les annotations Data Annotation sur les entités. Un workflow CI/CD GitHub Actions exécute automatiquement les tests à chaque push sur les branches master/main.
+
+### Couverture de code
+
+Pour exécuter les tests avec couverture de code et générer un rapport HTML :
+
+```bash
+# Exécuter les tests avec collecte de couverture
+dotnet test --collect:"XPlat Code Coverage"
+
+# Générer le rapport HTML (exclut les fichiers UI Blazor)
+dotnet reportgenerator -reports:"BlazorGame.Tests/TestResults/*/coverage.cobertura.xml" -targetdir:"BlazorGame.Tests/TestResults/coverage-report" -reporttypes:Html -classfilters:"-BlazorGame.Client.Components.*;-BlazorGame.Client.Pages.*;-BlazorGame.Client.Layout.*"
+```
+
+Le rapport sera disponible dans `BlazorGame.Tests/TestResults/coverage-report/index.html`.
+
+Les fichiers UI (composants Blazor, pages et layouts) sont exclus du calcul de couverture car ils nécessitent des tests d'intégration spécifiques avec un navigateur.
