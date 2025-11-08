@@ -1,10 +1,12 @@
 @inherits ComponentBase
+@implements IAsyncDisposable
+@inject IJSRuntime JSRuntime
 
-@* Composant UserMenu pour le menu utilisateur, quand on clique sur l'icon de l'utilisateur
+@* Composant UserMenu pour le menu utilisateur, quand on clique sur l'icône de l'utilisateur
  * Pour le moment le service d'authentification n'est pas implémenté, donc on a accès à toutes les pages
  *@
 
-<div class="user-menu relative" @onclick:stopPropagation>
+<div class="user-menu relative" @ref="_menuElement" @onclick:stopPropagation>
     <button @onclick="ToggleUserMenu" class="hover:opacity-100">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
@@ -14,16 +16,16 @@
     @if (_isUserMenuOpen)
     {
             <div class="py-2 user-menu-dropdown">
-                <a href="/new-adventure" class="block px-4 py-2 text-white hover:bg-white/10">
+                <a href="/new-adventure" @onclick="CloseUserMenu" class="block px-4 py-2 text-white hover:bg-white/10">
                     Jouer
                 </a>
-                <a href="/account" class="block px-4 py-2 text-white hover:bg-white/10">
+                <a href="/account" @onclick="CloseUserMenu" class="block px-4 py-2 text-white hover:bg-white/10">
                     Mon Compte
                 </a>
-                <a href="/history" class="block px-4 py-2 text-white hover:bg-white/10">
+                <a href="/history" @onclick="CloseUserMenu" class="block px-4 py-2 text-white hover:bg-white/10">
                     Mon Historique
                 </a>
-                <a href="/admin-dashboard" class="block px-4 py-2 text-white hover:bg-white/10">
+                <a href="/admin-dashboard" @onclick="CloseUserMenu" class="block px-4 py-2 text-white hover:bg-white/10">
                     Administration
                 </a>
             </div>
@@ -32,6 +34,27 @@
 
 @code {
     private bool _isUserMenuOpen;
+    private ElementReference _menuElement;
+    private IJSObjectReference? _jsModule;
+    private DotNetObjectReference<UserMenu>? _objRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _objRef = DotNetObjectReference.Create(this);
+            _jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/userMenu.js");
+        }
+
+        if (_isUserMenuOpen && _jsModule != null && _objRef != null)
+        {
+            await _jsModule.InvokeVoidAsync("setupClickOutside", _menuElement, _objRef);
+        }
+        else if (!_isUserMenuOpen && _jsModule != null)
+        {
+            await _jsModule.InvokeVoidAsync("removeClickOutside");
+        }
+    }
 
     private void ToggleUserMenu()
     {
@@ -43,5 +66,15 @@
     {
         _isUserMenuOpen = false;
         StateHasChanged();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_jsModule != null)
+        {
+            await _jsModule.InvokeVoidAsync("removeClickOutside");
+            await _jsModule.DisposeAsync();
+        }
+        _objRef?.Dispose();
     }
 }
