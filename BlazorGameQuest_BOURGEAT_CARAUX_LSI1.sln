@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorGame.Client", "Blazor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorGame.Tests", "BlazorGame.Tests\BlazorGame.Tests.csproj", "{6FCA8BCC-8CAD-44A3-BB8E-AF9B975C65AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorGame.Core", "BlazorGame.Data\BlazorGame.Core.csproj", "{7F3A66D9-9699-4FD0-ADD8-03D365CD99C7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorGame.Core", "BlazorGame.Core\BlazorGame.Core.csproj", "{7F3A66D9-9699-4FD0-ADD8-03D365CD99C7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorGame.Gateway", "BlazorGame.Gateway\BlazorGame.Gateway.csproj", "{4935F5BF-D26B-408E-BC55-844603FF2D67}"
 EndProject
