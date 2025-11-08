@@ -164,3 +164,8 @@ orleans.codegen.cs
 
 # Node modules
 node_modules/
+
+.config/
+
+
+TestResults/
