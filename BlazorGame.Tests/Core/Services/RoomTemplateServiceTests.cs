@@ -293,5 +293,43 @@ public class RoomTemplateServiceTests
         // Assert
         Assert.False(result);
     }
+
+    /// Test: GetAllIncludingInactiveAsync retourne tous les templates actifs et inactifs
+    [Fact]
+    public async Task GetAllIncludingInactiveAsync_ReturnsAllTemplates()
+    {
+        // Arrange
+        var context = CreateInMemoryContext();
+        var service = new RoomTemplateService(context);
+
+        var activeTemplate = new RoomTemplate
+        {
+            Id = Guid.NewGuid(),
+            Name = "Active Room",
+            Description = "Active",
+            Type = RoomType.Combat,
+            IsActive = true
+        };
+
+        var inactiveTemplate = new RoomTemplate
+        {
+            Id = Guid.NewGuid(),
+            Name = "Inactive Room",
+            Description = "Inactive",
+            Type = RoomType.Search,
+            IsActive = false
+        };
+
+        context.RoomTemplates.AddRange(activeTemplate, inactiveTemplate);
+        await context.SaveChangesAsync();
+
+        // Act
+        var result = await service.GetAllIncludingInactiveAsync();
+
+        // Assert
+        Assert.Equal(2, result.Count);
+        Assert.Contains(result, t => t.Id == activeTemplate.Id);
+        Assert.Contains(result, t => t.Id == inactiveTemplate.Id);
+    }
 }
 

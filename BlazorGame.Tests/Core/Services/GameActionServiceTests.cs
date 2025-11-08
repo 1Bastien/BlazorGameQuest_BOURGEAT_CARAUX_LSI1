@@ -37,7 +37,6 @@ public class GameActionServiceTests
         {
             Id = Guid.NewGuid(),
             StartingHealth = 100,
-            MaxRooms = 10,
             MinCombatVictoryPoints = 10,
             MaxCombatVictoryPoints = 20,
             MinCombatDefeatPoints = -5,
@@ -110,7 +109,6 @@ public class GameActionServiceTests
         {
             Id = Guid.NewGuid(),
             StartingHealth = 100,
-            MaxRooms = 10
         };
         context.GameRewards.Add(config);
         await context.SaveChangesAsync();
@@ -278,6 +276,82 @@ public class GameActionServiceTests
             Assert.InRange(result.PointsChange, config.MinTrapPoints, config.MaxTrapPoints);
             Assert.InRange(result.HealthChange, config.MinTrapHealthLoss, config.MaxTrapHealthLoss);
         }
+    }
+
+    /// Test: GetSessionActionsAsync retourne toutes les actions d'une session triées par timestamp
+    [Fact]
+    public async Task GetSessionActionsAsync_ReturnsActionsOrderedByTimestamp()
+    {
+        // Arrange
+        var (context, session, _) = await SetupTestDataAsync();
+
+        var action1 = new GameAction
+        {
+            Id = Guid.NewGuid(),
+            GameSessionId = session.Id,
+            Type = ActionType.Combat,
+            Result = GameActionResult.Victory,
+            PointsChange = 15,
+            HealthChange = 0,
+            RoomNumber = 1,
+            Timestamp = DateTime.UtcNow.AddMinutes(-10)
+        };
+
+        var action2 = new GameAction
+        {
+            Id = Guid.NewGuid(),
+            GameSessionId = session.Id,
+            Type = ActionType.Search,
+            Result = GameActionResult.FoundTreasure,
+            PointsChange = 20,
+            HealthChange = 0,
+            RoomNumber = 2,
+            Timestamp = DateTime.UtcNow.AddMinutes(-5)
+        };
+
+        var action3 = new GameAction
+        {
+            Id = Guid.NewGuid(),
+            GameSessionId = session.Id,
+            Type = ActionType.Flee,
+            Result = GameActionResult.Escaped,
+            PointsChange = -3,
+            HealthChange = 0,
+            RoomNumber = 3,
+            Timestamp = DateTime.UtcNow
+        };
+
+        context.GameActions.AddRange(action1, action2, action3);
+        await context.SaveChangesAsync();
+
+        var rewardsService = new GameRewardsService(context);
+        var service = new GameActionService(context, rewardsService);
+
+        // Act
+        var result = await service.GetSessionActionsAsync(session.Id);
+
+        // Assert
+        Assert.Equal(3, result.Count);
+        Assert.Equal(action1.Id, result[0].Id); // Plus ancienne en premier
+        Assert.Equal(action2.Id, result[1].Id);
+        Assert.Equal(action3.Id, result[2].Id); // Plus récente en dernier
+        Assert.All(result, a => Assert.Equal(session.Id, a.GameSessionId));
+    }
+
+    /// Test: GetSessionActionsAsync retourne une liste vide quand aucune action n'existe
+    [Fact]
+    public async Task GetSessionActionsAsync_ReturnsEmptyList_WhenNoActions()
+    {
+        // Arrange
+        var (context, session, _) = await SetupTestDataAsync();
+        var rewardsService = new GameRewardsService(context);
+        var service = new GameActionService(context, rewardsService);
+
+        // Act
+        var result = await service.GetSessionActionsAsync(session.Id);
+
+        // Assert
+        Assert.Empty(result);
     }
 }
 

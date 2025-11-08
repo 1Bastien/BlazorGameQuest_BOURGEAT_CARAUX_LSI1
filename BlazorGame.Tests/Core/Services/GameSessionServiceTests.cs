@@ -20,9 +20,9 @@ public class GameSessionServiceTests
         return new GameDbContext(options);
     }
 
-    /// Test: GetAllAsync retourne toutes les sessions triées par date décroissante
+    /// Test: GetPlayerSessionsAsync retourne toutes les sessions d'un joueur triées par date décroissante
     [Fact]
-    public async Task GetAllAsync_ReturnsAllSessions_OrderedByStartTimeDesc()
+    public async Task GetPlayerSessionsAsync_ReturnsPlayerSessions_OrderedByStartTimeDesc()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -30,14 +30,16 @@ public class GameSessionServiceTests
         var rewardsService = new GameRewardsService(context);
         var service = new GameSessionService(context, roomService, rewardsService);
 
-        var user = new User
-            { Id = Guid.NewGuid(), Username = "TestUser", Email = "test@test.com", PasswordHash = "hash" };
-        context.Users.Add(user);
+        var user1 = new User
+            { Id = Guid.NewGuid(), Username = "TestUser1", Email = "test1@test.com", PasswordHash = "hash" };
+        var user2 = new User
+            { Id = Guid.NewGuid(), Username = "TestUser2", Email = "test2@test.com", PasswordHash = "hash" };
+        context.Users.AddRange(user1, user2);
 
         var session1 = new GameSession
         {
             Id = Guid.NewGuid(),
-            PlayerId = user.Id,
+            PlayerId = user1.Id,
             StartTime = DateTime.UtcNow.AddHours(-2),
             TotalRooms = 5,
             GeneratedRoomsJson = "[]"
@@ -46,27 +48,37 @@ public class GameSessionServiceTests
         var session2 = new GameSession
         {
             Id = Guid.NewGuid(),
-            PlayerId = user.Id,
+            PlayerId = user1.Id,
             StartTime = DateTime.UtcNow,
             TotalRooms = 3,
             GeneratedRoomsJson = "[]"
         };
 
-        context.GameSessions.AddRange(session1, session2);
+        var session3 = new GameSession
+        {
+            Id = Guid.NewGuid(),
+            PlayerId = user2.Id,
+            StartTime = DateTime.UtcNow.AddHours(-1),
+            TotalRooms = 4,
+            GeneratedRoomsJson = "[]"
+        };
+
+        context.GameSessions.AddRange(session1, session2, session3);
         await context.SaveChangesAsync();
 
         // Act
-        var result = await service.GetAllAsync();
+        var result = await service.GetPlayerSessionsAsync(user1.Id);
 
         // Assert
         Assert.Equal(2, result.Count);
         Assert.Equal(session2.Id, result[0].Id); // Plus récent en premier
         Assert.Equal(session1.Id, result[1].Id);
+        Assert.All(result, s => Assert.Equal(user1.Id, s.PlayerId)); // Toutes les sessions appartiennent à user1
     }
 
-    /// Test: GetAllAsync retourne une liste vide quand aucune session n'existe
+    /// Test: GetPlayerSessionsAsync retourne une liste vide quand le joueur n'a pas de sessions
     [Fact]
-    public async Task GetAllAsync_ReturnsEmptyList_WhenNoSessions()
+    public async Task GetPlayerSessionsAsync_ReturnsEmptyList_WhenNoSessions()
     {
         // Arrange
         var context = CreateInMemoryContext();
@@ -74,8 +86,10 @@ public class GameSessionServiceTests
         var rewardsService = new GameRewardsService(context);
         var service = new GameSessionService(context, roomService, rewardsService);
 
+        var userId = Guid.NewGuid();
+
         // Act
-        var result = await service.GetAllAsync();
+        var result = await service.GetPlayerSessionsAsync(userId);
 
         // Assert
         Assert.Empty(result);
@@ -152,7 +166,6 @@ public class GameSessionServiceTests
         {
             Id = Guid.NewGuid(),
             StartingHealth = 100,
-            MaxRooms = 10,
             MinCombatVictoryPoints = 10,
             MaxCombatVictoryPoints = 20
         };
@@ -196,7 +209,6 @@ public class GameSessionServiceTests
         {
             Id = Guid.NewGuid(),
             StartingHealth = 100,
-            MaxRooms = 10
         };
         context.GameRewards.Add(config);
         await context.SaveChangesAsync();
@@ -410,6 +422,90 @@ public class GameSessionServiceTests
         Assert.False(service.CanContinue(session1));
         Assert.False(service.CanContinue(session2));
         Assert.False(service.CanContinue(session3));
+    }
+
+    /// Test: GetPlayerCurrentSessionAsync retourne la session en cours d'un joueur
+    [Fact]
+    public async Task GetPlayerCurrentSessionAsync_ReturnsCurrentSession_WhenExists()
+    {
+        // Arrange
+        var context = CreateInMemoryContext();
+        var roomService = new RoomTemplateService(context);
+        var rewardsService = new GameRewardsService(context);
+        var service = new GameSessionService(context, roomService, rewardsService);
+
+        var user = new User
+            { Id = Guid.NewGuid(), Username = "TestUser", Email = "test@test.com", PasswordHash = "hash" };
+        context.Users.Add(user);
+
+        var completedSession = new GameSession
+        {
+            Id = Guid.NewGuid(),
+            PlayerId = user.Id,
+            StartTime = DateTime.UtcNow.AddHours(-3),
+            LastSaveTime = DateTime.UtcNow.AddHours(-3),
+            Status = GameStatus.Completed,
+            TotalRooms = 5,
+            GeneratedRoomsJson = "[]"
+        };
+
+        var currentSession = new GameSession
+        {
+            Id = Guid.NewGuid(),
+            PlayerId = user.Id,
+            StartTime = DateTime.UtcNow.AddHours(-1),
+            LastSaveTime = DateTime.UtcNow,
+            Status = GameStatus.InProgress,
+            TotalRooms = 5,
+            GeneratedRoomsJson = "[]"
+        };
+
+        context.GameSessions.AddRange(completedSession, currentSession);
+        await context.SaveChangesAsync();
+
+        // Act
+        var result = await service.GetPlayerCurrentSessionAsync(user.Id);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(currentSession.Id, result.Id);
+        Assert.Equal(GameStatus.InProgress, result.Status);
+        Assert.NotNull(result.Player);
+        Assert.NotNull(result.Actions);
+    }
+
+    /// Test: GetPlayerCurrentSessionAsync retourne null quand aucune session en cours n'existe
+    [Fact]
+    public async Task GetPlayerCurrentSessionAsync_ReturnsNull_WhenNoCurrentSession()
+    {
+        // Arrange
+        var context = CreateInMemoryContext();
+        var roomService = new RoomTemplateService(context);
+        var rewardsService = new GameRewardsService(context);
+        var service = new GameSessionService(context, roomService, rewardsService);
+
+        var user = new User
+            { Id = Guid.NewGuid(), Username = "TestUser", Email = "test@test.com", PasswordHash = "hash" };
+        context.Users.Add(user);
+
+        var completedSession = new GameSession
+        {
+            Id = Guid.NewGuid(),
+            PlayerId = user.Id,
+            StartTime = DateTime.UtcNow.AddHours(-2),
+            Status = GameStatus.Completed,
+            TotalRooms = 5,
+            GeneratedRoomsJson = "[]"
+        };
+
+        context.GameSessions.Add(completedSession);
+        await context.SaveChangesAsync();
+
+        // Act
+        var result = await service.GetPlayerCurrentSessionAsync(user.Id);
+
+        // Assert
+        Assert.Null(result);
     }
 }
 

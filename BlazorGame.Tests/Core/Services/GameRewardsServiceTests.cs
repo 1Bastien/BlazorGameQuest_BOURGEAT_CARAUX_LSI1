@@ -31,7 +31,6 @@ public class GameRewardsServiceTests
         {
             Id = Guid.NewGuid(),
             StartingHealth = 100,
-            MaxRooms = 10,
             MinCombatVictoryPoints = 10,
             MaxCombatVictoryPoints = 20
         };
@@ -74,7 +73,6 @@ public class GameRewardsServiceTests
         {
             Id = Guid.NewGuid(),
             StartingHealth = 100,
-            MaxRooms = 10
         };
         context.GameRewards.Add(originalConfig);
         await context.SaveChangesAsync();
@@ -83,7 +81,6 @@ public class GameRewardsServiceTests
         {
             Id = originalConfig.Id,
             StartingHealth = 150,
-            MaxRooms = 15
         };
 
         // Act
@@ -92,7 +89,6 @@ public class GameRewardsServiceTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(150, result.StartingHealth);
-        Assert.Equal(15, result.MaxRooms);
     }
 
     /// Test UpdateConfigAsync lève une exception quand la configuration n'existe pas
