@@ -84,6 +84,25 @@
         {
             <LoadingScreen OnContinueClick="StartAdventure" />
         }
+        else if (_noRoomsAvailable)
+        {
+            <div class="no-rooms-container">
+                <div class="no-rooms-content">
+                    <h1 class="font-medieval text-5xl mb-8 text-medieval-accent">Aucune salle disponible</h1>
+                    <p class="text-medieval-light text-xl mb-4">
+                        Désolé, aucune salle de jeu n'est actuellement disponible dans notre donjon.
+                    </p>
+                    <p class="text-medieval-light text-lg mb-8">
+                        Veuillez contacter un administrateur pour qu'il crée des salles, ou réessayez plus tard.
+                    </p>
+                    <div class="flex gap-4 justify-center">
+                        <button class="medieval-button" @onclick="ReturnToHome">
+                            Retour à l'accueil
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
         else if (!_gameStarted)
         {
             <GameRules IsLoading="@_isLoading" OnStartGameClick="StartGame" />
@@ -190,6 +209,7 @@
     private bool _hasSessionInProgress;
     private bool _showAbandonModal;
     private bool _showNewGameModal;
+    private bool _noRoomsAvailable;
     
     private GameSession? _currentSession;
     private GameSession? _existingSession;
@@ -266,7 +286,6 @@
     private async Task StartAdventure()
     {
         _isLoading = false;
-        _gameStarted = true;
         
         try
         {
@@ -276,12 +295,38 @@
             {
                 _roomIds = GameService.GetGeneratedRoomIds(_currentSession.GeneratedRoomsJson);
                 
+                // Vérifier s'il y a des salles disponibles
+                if (_roomIds.Count == 0)
+                {
+                    _noRoomsAvailable = true;
+                    _gameStarted = false;
+                    return;
+                }
+                
                 await LoadCurrentRoom();
+                
+                // Vérifier si la salle a pu être chargée
+                if (_currentRoomTemplate == null)
+                {
+                    _noRoomsAvailable = true;
+                    _gameStarted = false;
+                    return;
+                }
+                
+                _gameStarted = true;
+            }
+            else
+            {
+                // Échec de création de session (probablement pas de salles en BDD)
+                _noRoomsAvailable = true;
+                _gameStarted = false;
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Erreur lors du démarrage du jeu: {ex.Message}");
+            _noRoomsAvailable = true;
+            _gameStarted = false;
         }
     }
 
@@ -440,5 +485,10 @@
         
         var roomNumber = _currentSession.CurrentRoomIndex + 1;
         return Math.Min(roomNumber, _currentSession.TotalRooms);
+    }
+
+    private void ReturnToHome()
+    {
+        NavigationManager.NavigateTo("/");
     }
 }

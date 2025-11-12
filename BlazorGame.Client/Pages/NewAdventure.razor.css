@@ -224,3 +224,21 @@
     border-radius: 0.5rem;
     padding: 1rem;
 }
+
+.no-rooms-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    padding: 2rem;
+}
+
+.no-rooms-content {
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 1rem;
+    padding: 3rem;
+    max-width: 800px;
+    text-align: center;
+    border: 2px solid rgba(218, 165, 32, 0.3);
+    animation: fadeIn 0.5s ease;
+}
