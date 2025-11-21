@@ -1,4 +1,22 @@
 services:
+  # Keycloak - Service d'authentification et d'autorisation
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    command: start-dev --import-realm
+    ports:
+      - "8080:8080" # Port exposé pour accéder à Keycloak
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_HTTP_ENABLED=true
+      - KC_HOSTNAME_STRICT=false
+      - KC_HOSTNAME_STRICT_HTTPS=false
+      - KC_HEALTH_ENABLED=true
+    volumes:
+      - ./Keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
+    networks:
+      - internal-network
+
   # Frontend Blazor WebAssembly
   client:
     build:
@@ -23,6 +41,7 @@ services:
       - client
       - auth-service
       - core-service
+      - keycloak
     networks:
       - internal-network
 
@@ -33,6 +52,8 @@ services:
       dockerfile: AuthenticationServices/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - keycloak
     networks:
       - internal-network
     # Pas de port exposé publiquement, seulement accessible via la gateway
