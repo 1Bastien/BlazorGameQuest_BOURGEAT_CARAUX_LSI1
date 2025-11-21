@@ -16,10 +16,9 @@ docker-compose up --build
 docker-compose down
 ```
 
-Les services seront disponibles sur :
+L'application sera disponible sur :
 
-- Frontend : http://localhost:5000
-- API Gateway : http://localhost:5001
+- Gateway (Frontend + API) : http://localhost:5000
 
 ## Description du projet
 
@@ -60,6 +59,7 @@ La gateway utilise **YARP (Yet Another Reverse Proxy)** pour router les requête
 - `/api/GameSessions/*` → Core Service
 - `/api/GameRewards/*` → Core Service
 - `/api/RoomTemplates/*` → Core Service
+- `/api/GameActions/*` → Core Service
 - `/api/auth/*` → Auth Service
 - `/*` (tout le reste) → Client Blazor
 
@@ -91,6 +91,7 @@ Les tests sont implémentés avec xUnit, Moq et une base de données InMemory. L
 - **RoomTemplateServiceTests** : opérations CRUD sur les modèles de salles
 - **GameRewardsServiceTests** : récupération et mise à jour de la configuration des récompenses
 - **GameSessionsControllerTests** : tests des endpoints de gestion des sessions
+- **GameActionsControllerTests** : tests des endpoints de gestion des actions de jeu
 - **GameRewardsControllerTests** : tests des endpoints de configuration des récompenses
 - **RoomTemplatesControllerTests** : tests des endpoints CRUD des modèles de salles
 
