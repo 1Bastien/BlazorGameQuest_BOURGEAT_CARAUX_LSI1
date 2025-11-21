@@ -25,13 +25,7 @@ public class GameActionServiceTests
     {
         var context = CreateInMemoryContext();
 
-        var user = new User
-        {
-            Id = Guid.NewGuid(),
-            Username = "TestUser",
-            Email = "test@test.com",
-            PasswordHash = "motdepasse"
-        };
+        var user = new User { Id = Guid.NewGuid() };
 
         var config = new GameRewards
         {
@@ -129,8 +123,7 @@ public class GameActionServiceTests
     {
         // Arrange
         var context = CreateInMemoryContext();
-        var user = new User
-            { Id = Guid.NewGuid(), Username = "TestUser", Email = "test@test.com", PasswordHash = "hash" };
+        var user = new User { Id = Guid.NewGuid() };
         var session = new GameSession
         {
             Id = Guid.NewGuid(),

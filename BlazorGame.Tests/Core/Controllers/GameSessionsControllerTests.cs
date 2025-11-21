@@ -27,13 +27,7 @@ public class GameSessionsControllerTests
     {
         var context = CreateInMemoryContext();
 
-        var user = new User
-        {
-            Id = Guid.NewGuid(),
-            Username = "TestUser",
-            Email = "test@test.com",
-            PasswordHash = "hash"
-        };
+        var user = new User { Id = Guid.NewGuid() };
 
         var config = new GameRewards
         {

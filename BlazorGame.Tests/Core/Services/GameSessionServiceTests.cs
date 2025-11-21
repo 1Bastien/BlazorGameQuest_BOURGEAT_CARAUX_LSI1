@@ -30,10 +30,8 @@ public class GameSessionServiceTests
         var rewardsService = new GameRewardsService(context);
         var service = new GameSessionService(context, roomService, rewardsService);
 
-        var user1 = new User
-            { Id = Guid.NewGuid(), Username = "TestUser1", Email = "test1@test.com", PasswordHash = "hash" };
-        var user2 = new User
-            { Id = Guid.NewGuid(), Username = "TestUser2", Email = "test2@test.com", PasswordHash = "hash" };
+        var user1 = new User { Id = Guid.NewGuid() };
+        var user2 = new User { Id = Guid.NewGuid() };
         context.Users.AddRange(user1, user2);
 
         var session1 = new GameSession
@@ -105,8 +103,7 @@ public class GameSessionServiceTests
         var rewardsService = new GameRewardsService(context);
         var service = new GameSessionService(context, roomService, rewardsService);
 
-        var user = new User
-            { Id = Guid.NewGuid(), Username = "TestUser", Email = "test@test.com", PasswordHash = "hash" };
+        var user = new User { Id = Guid.NewGuid() };
         context.Users.Add(user);
 
         var session = new GameSession
@@ -158,8 +155,7 @@ public class GameSessionServiceTests
         var rewardsService = new GameRewardsService(context);
         var service = new GameSessionService(context, roomService, rewardsService);
 
-        var user = new User
-            { Id = Guid.NewGuid(), Username = "TestUser", Email = "test@test.com", PasswordHash = "hash" };
+        var user = new User { Id = Guid.NewGuid() };
         context.Users.Add(user);
 
         var config = new GameRewards
@@ -230,8 +226,7 @@ public class GameSessionServiceTests
         var rewardsService = new GameRewardsService(context);
         var service = new GameSessionService(context, roomService, rewardsService);
 
-        var user = new User
-            { Id = Guid.NewGuid(), Username = "TestUser", Email = "test@test.com", PasswordHash = "hash" };
+        var user = new User { Id = Guid.NewGuid() };
         context.Users.Add(user);
 
         var session = new GameSession
@@ -304,8 +299,7 @@ public class GameSessionServiceTests
         var rewardsService = new GameRewardsService(context);
         var service = new GameSessionService(context, roomService, rewardsService);
 
-        var user = new User
-            { Id = Guid.NewGuid(), Username = "TestUser", Email = "test@test.com", PasswordHash = "hash" };
+        var user = new User { Id = Guid.NewGuid() };
         context.Users.Add(user);
 
         var session = new GameSession
@@ -434,8 +428,7 @@ public class GameSessionServiceTests
         var rewardsService = new GameRewardsService(context);
         var service = new GameSessionService(context, roomService, rewardsService);
 
-        var user = new User
-            { Id = Guid.NewGuid(), Username = "TestUser", Email = "test@test.com", PasswordHash = "hash" };
+        var user = new User { Id = Guid.NewGuid() };
         context.Users.Add(user);
 
         var completedSession = new GameSession
@@ -484,8 +477,7 @@ public class GameSessionServiceTests
         var rewardsService = new GameRewardsService(context);
         var service = new GameSessionService(context, roomService, rewardsService);
 
-        var user = new User
-            { Id = Guid.NewGuid(), Username = "TestUser", Email = "test@test.com", PasswordHash = "hash" };
+        var user = new User { Id = Guid.NewGuid() };
         context.Users.Add(user);
 
         var completedSession = new GameSession
