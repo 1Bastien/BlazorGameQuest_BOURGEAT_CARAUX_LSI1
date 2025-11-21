@@ -26,8 +26,8 @@ public class GameRewardsService
     /// Met à jour la configuration des récompenses avec les nouvelles valeurs
     public async Task<GameRewards> UpdateConfigAsync(GameRewards config)
     {
-        var existing = await GetConfigAsync() 
-            ?? throw new InvalidOperationException("GameRewards configuration not found");
+        var existing = await GetConfigAsync()
+                       ?? throw new InvalidOperationException("GameRewards configuration not found");
 
         var properties = typeof(GameRewards).GetProperties();
         foreach (var prop in properties)
@@ -44,4 +44,29 @@ public class GameRewardsService
 
     /// Génère un nombre aléatoire entre deux valeurs incluses
     public int GetRandomInRange(int min, int max) => _random.Next(min, max + 1);
+
+    /// Crée une nouvelle configuration de récompenses
+    public async Task<GameRewards> CreateConfigAsync(GameRewards config)
+    {
+        _context.GameRewards.Add(config);
+        await _context.SaveChangesAsync();
+        return config;
+    }
+
+    /// Supprime la configuration des récompenses
+    public async Task<bool> DeleteConfigAsync()
+    {
+        var config = await GetConfigAsync();
+        if (config == null) return false;
+
+        _context.GameRewards.Remove(config);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    /// Récupère toutes les configurations de récompenses (normalement une seule)
+    public async Task<List<GameRewards>> GetAllAsync()
+    {
+        return await _context.GameRewards.ToListAsync();
+    }
 }

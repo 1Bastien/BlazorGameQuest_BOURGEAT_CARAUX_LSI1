@@ -17,7 +17,7 @@ public class GameSessionService
     private static readonly Random _random = new();
 
     public GameSessionService(
-        GameDbContext context, 
+        GameDbContext context,
         RoomTemplateService roomService,
         GameRewardsService rewardsService)
     {
@@ -83,7 +83,7 @@ public class GameSessionService
         existing.CurrentRoomIndex = session.CurrentRoomIndex;
         existing.Status = session.Status;
         existing.LastSaveTime = DateTime.UtcNow;
-        
+
         if (session.EndTime.HasValue)
             existing.EndTime = session.EndTime;
 
@@ -99,7 +99,7 @@ public class GameSessionService
 
         session.Status = GameStatus.Abandoned;
         session.EndTime = DateTime.UtcNow;
-        
+
         await _context.SaveChangesAsync();
         return true;
     }
@@ -107,8 +107,8 @@ public class GameSessionService
     /// Vérifie si une session peut continuer en fonction de son état
     public bool CanContinue(GameSession session)
     {
-        return session.Status == GameStatus.InProgress 
-               && session.CurrentHealth > 0 
+        return session.Status == GameStatus.InProgress
+               && session.CurrentHealth > 0
                && session.CurrentRoomIndex < session.TotalRooms;
     }
 
@@ -131,5 +131,26 @@ public class GameSessionService
             .Where(gs => gs.PlayerId == playerId && gs.Status == GameStatus.InProgress)
             .OrderByDescending(gs => gs.LastSaveTime)
             .FirstOrDefaultAsync();
+    }
+
+    /// Récupère toutes les sessions de jeu
+    public async Task<List<GameSession>> GetAllAsync()
+    {
+        return await _context.GameSessions
+            .Include(gs => gs.Player)
+            .Include(gs => gs.Actions)
+            .OrderByDescending(gs => gs.StartTime)
+            .ToListAsync();
+    }
+
+    /// Supprime une session de jeu
+    public async Task<bool> DeleteAsync(Guid id)
+    {
+        var session = await _context.GameSessions.FindAsync(id);
+        if (session == null) return false;
+
+        _context.GameSessions.Remove(session);
+        await _context.SaveChangesAsync();
+        return true;
     }
 }

@@ -24,7 +24,7 @@ public class GameRewardsController : ControllerBase
     {
         var config = await _service.GetConfigAsync();
         if (config == null) return NotFound();
-        
+
         return Ok(config);
     }
 
@@ -41,5 +41,31 @@ public class GameRewardsController : ControllerBase
         {
             return NotFound();
         }
+    }
+
+    /// Crée une nouvelle configuration des récompenses
+    [HttpPost]
+    public async Task<ActionResult<GameRewards>> CreateConfig([FromBody] GameRewards config)
+    {
+        var created = await _service.CreateConfigAsync(config);
+        return CreatedAtAction(nameof(GetConfig), created);
+    }
+
+    /// Supprime la configuration des récompenses
+    [HttpDelete]
+    public async Task<ActionResult> DeleteConfig()
+    {
+        var result = await _service.DeleteConfigAsync();
+        if (!result) return NotFound();
+
+        return NoContent();
+    }
+
+    /// Récupère toutes les configurations
+    [HttpGet("all")]
+    public async Task<ActionResult<List<GameRewards>>> GetAll()
+    {
+        var configs = await _service.GetAllAsync();
+        return Ok(configs);
     }
 }

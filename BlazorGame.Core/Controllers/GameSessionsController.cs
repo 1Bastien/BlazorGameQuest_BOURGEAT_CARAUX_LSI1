@@ -17,7 +17,7 @@ public class GameSessionsController : ControllerBase
     private readonly RoomTemplateService _roomService;
 
     public GameSessionsController(
-        GameSessionService sessionService, 
+        GameSessionService sessionService,
         GameActionService actionService,
         RoomTemplateService roomService)
     {
@@ -32,7 +32,7 @@ public class GameSessionsController : ControllerBase
     {
         var session = await _sessionService.GetByIdAsync(id);
         if (session == null) return NotFound();
-        
+
         return Ok(session);
     }
 
@@ -47,7 +47,8 @@ public class GameSessionsController : ControllerBase
 
     /// Effectue une action dans une session de jeu
     [HttpPost("{sessionId}/action")]
-    public async Task<ActionResult<GameActionResponse>> PerformAction(Guid sessionId, [FromBody] PerformActionRequest request)
+    public async Task<ActionResult<GameActionResponse>> PerformAction(Guid sessionId,
+        [FromBody] PerformActionRequest request)
     {
         var session = await _sessionService.GetByIdAsync(sessionId);
         if (session == null) return NotFound("Session not found");
@@ -55,8 +56,9 @@ public class GameSessionsController : ControllerBase
         if (!_sessionService.CanContinue(session))
             return BadRequest("Session cannot continue");
 
-        var action = await _actionService.ProcessActionAsync(sessionId, request.ActionType, session.CurrentRoomIndex + 1);
-        
+        var action =
+            await _actionService.ProcessActionAsync(sessionId, request.ActionType, session.CurrentRoomIndex + 1);
+
         session = await _sessionService.GetByIdAsync(sessionId);
 
         return Ok(new GameActionResponse
@@ -72,7 +74,7 @@ public class GameSessionsController : ControllerBase
     {
         var result = await _sessionService.AbandonSessionAsync(sessionId);
         if (!result) return NotFound();
-        
+
         return NoContent();
     }
 
@@ -98,8 +100,36 @@ public class GameSessionsController : ControllerBase
     {
         var session = await _sessionService.GetPlayerCurrentSessionAsync(playerId);
         if (session == null) return NotFound();
-        
+
         return Ok(session);
+    }
+
+    /// Récupère toutes les sessions de jeu
+    [HttpGet]
+    public async Task<ActionResult<List<GameSession>>> GetAll()
+    {
+        var sessions = await _sessionService.GetAllAsync();
+        return Ok(sessions);
+    }
+
+    /// Met à jour une session de jeu
+    [HttpPut("{id}")]
+    public async Task<ActionResult<GameSession>> Update(Guid id, [FromBody] GameSession session)
+    {
+        var updated = await _sessionService.UpdateSessionAsync(id, session);
+        if (updated == null) return NotFound();
+
+        return Ok(updated);
+    }
+
+    /// Supprime une session de jeu
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> Delete(Guid id)
+    {
+        var result = await _sessionService.DeleteAsync(id);
+        if (!result) return NotFound();
+
+        return NoContent();
     }
 }
 
