@@ -142,5 +142,105 @@ public class GameRewardsServiceTests
         // Assert
         Assert.Equal(value, result);
     }
+
+    /// Test CreateConfigAsync crée une nouvelle configuration
+    [Fact]
+    public async Task CreateConfigAsync_CreatesConfig_Successfully()
+    {
+        // Arrange
+        var context = CreateInMemoryContext();
+        var service = new GameRewardsService(context);
+
+        var newConfig = new GameRewards
+        {
+            Id = Guid.NewGuid(),
+            StartingHealth = 120,
+            MinCombatVictoryPoints = 15,
+            MaxCombatVictoryPoints = 25
+        };
+
+        // Act
+        var result = await service.CreateConfigAsync(newConfig);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(newConfig.Id, result.Id);
+        Assert.Equal(120, result.StartingHealth);
+
+        var savedConfig = await context.GameRewards.FindAsync(newConfig.Id);
+        Assert.NotNull(savedConfig);
+    }
+
+    /// Test DeleteConfigAsync supprime la configuration
+    [Fact]
+    public async Task DeleteConfigAsync_DeletesConfig_WhenExists()
+    {
+        // Arrange
+        var context = CreateInMemoryContext();
+        var service = new GameRewardsService(context);
+
+        var config = new GameRewards
+        {
+            Id = Guid.NewGuid(),
+            StartingHealth = 100
+        };
+        context.GameRewards.Add(config);
+        await context.SaveChangesAsync();
+
+        // Act
+        var result = await service.DeleteConfigAsync();
+
+        // Assert
+        Assert.True(result);
+        var deleted = await context.GameRewards.FindAsync(config.Id);
+        Assert.Null(deleted);
+    }
+
+    /// Test DeleteConfigAsync retourne false quand aucune configuration n'existe
+    [Fact]
+    public async Task DeleteConfigAsync_ReturnsFalse_WhenNotExists()
+    {
+        // Arrange
+        var context = CreateInMemoryContext();
+        var service = new GameRewardsService(context);
+
+        // Act
+        var result = await service.DeleteConfigAsync();
+
+        // Assert
+        Assert.False(result);
+    }
+
+    /// Test GetAllAsync retourne toutes les configurations
+    [Fact]
+    public async Task GetAllAsync_ReturnsAllConfigs()
+    {
+        // Arrange
+        var context = CreateInMemoryContext();
+        var service = new GameRewardsService(context);
+
+        var config1 = new GameRewards
+        {
+            Id = Guid.NewGuid(),
+            StartingHealth = 100
+        };
+
+        var config2 = new GameRewards
+        {
+            Id = Guid.NewGuid(),
+            StartingHealth = 150
+        };
+
+        context.GameRewards.AddRange(config1, config2);
+        await context.SaveChangesAsync();
+
+        // Act
+        var result = await service.GetAllAsync();
+
+        // Assert
+        Assert.Equal(2, result.Count);
+        Assert.Contains(result, c => c.Id == config1.Id);
+        Assert.Contains(result, c => c.Id == config2.Id);
+    }
 }
 

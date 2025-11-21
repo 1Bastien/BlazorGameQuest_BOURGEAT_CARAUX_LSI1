@@ -499,5 +499,100 @@ public class GameSessionServiceTests
         // Assert
         Assert.Null(result);
     }
+
+    /// Test: GetAllAsync retourne toutes les sessions
+    [Fact]
+    public async Task GetAllAsync_ReturnsAllSessions()
+    {
+        // Arrange
+        var context = CreateInMemoryContext();
+        var roomService = new RoomTemplateService(context);
+        var rewardsService = new GameRewardsService(context);
+        var service = new GameSessionService(context, roomService, rewardsService);
+
+        var user1 = new User { Id = Guid.NewGuid() };
+        var user2 = new User { Id = Guid.NewGuid() };
+        context.Users.AddRange(user1, user2);
+
+        var session1 = new GameSession
+        {
+            Id = Guid.NewGuid(),
+            PlayerId = user1.Id,
+            StartTime = DateTime.UtcNow.AddHours(-2),
+            TotalRooms = 5,
+            GeneratedRoomsJson = "[]"
+        };
+
+        var session2 = new GameSession
+        {
+            Id = Guid.NewGuid(),
+            PlayerId = user2.Id,
+            StartTime = DateTime.UtcNow,
+            TotalRooms = 3,
+            GeneratedRoomsJson = "[]"
+        };
+
+        context.GameSessions.AddRange(session1, session2);
+        await context.SaveChangesAsync();
+
+        // Act
+        var result = await service.GetAllAsync();
+
+        // Assert
+        Assert.Equal(2, result.Count);
+        Assert.Contains(result, s => s.Id == session1.Id);
+        Assert.Contains(result, s => s.Id == session2.Id);
+    }
+
+    /// Test: DeleteAsync supprime une session avec succès
+    [Fact]
+    public async Task DeleteAsync_DeletesSession_WhenExists()
+    {
+        // Arrange
+        var context = CreateInMemoryContext();
+        var roomService = new RoomTemplateService(context);
+        var rewardsService = new GameRewardsService(context);
+        var service = new GameSessionService(context, roomService, rewardsService);
+
+        var user = new User { Id = Guid.NewGuid() };
+        context.Users.Add(user);
+
+        var session = new GameSession
+        {
+            Id = Guid.NewGuid(),
+            PlayerId = user.Id,
+            TotalRooms = 5,
+            GeneratedRoomsJson = "[]"
+        };
+        context.GameSessions.Add(session);
+        await context.SaveChangesAsync();
+
+        // Act
+        var result = await service.DeleteAsync(session.Id);
+
+        // Assert
+        Assert.True(result);
+        var deleted = await context.GameSessions.FindAsync(session.Id);
+        Assert.Null(deleted);
+    }
+
+    /// Test: DeleteAsync retourne false quand la session n'existe pas
+    [Fact]
+    public async Task DeleteAsync_ReturnsFalse_WhenNotExists()
+    {
+        // Arrange
+        var context = CreateInMemoryContext();
+        var roomService = new RoomTemplateService(context);
+        var rewardsService = new GameRewardsService(context);
+        var service = new GameSessionService(context, roomService, rewardsService);
+
+        var nonExistentId = Guid.NewGuid();
+
+        // Act
+        var result = await service.DeleteAsync(nonExistentId);
+
+        // Assert
+        Assert.False(result);
+    }
 }
 

@@ -346,5 +346,256 @@ public class GameActionServiceTests
         // Assert
         Assert.Empty(result);
     }
+
+    /// Test: GetByIdAsync retourne l'action avec ses relations
+    [Fact]
+    public async Task GetByIdAsync_ReturnsAction_WhenExists()
+    {
+        // Arrange
+        var (context, session, _) = await SetupTestDataAsync();
+
+        var action = new GameAction
+        {
+            Id = Guid.NewGuid(),
+            GameSessionId = session.Id,
+            Type = ActionType.Combat,
+            Result = GameActionResult.Victory,
+            PointsChange = 15,
+            HealthChange = 0,
+            RoomNumber = 1,
+            Timestamp = DateTime.UtcNow
+        };
+
+        context.GameActions.Add(action);
+        await context.SaveChangesAsync();
+
+        var rewardsService = new GameRewardsService(context);
+        var service = new GameActionService(context, rewardsService);
+
+        // Act
+        var result = await service.GetByIdAsync(action.Id);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(action.Id, result.Id);
+        Assert.NotNull(result.GameSession);
+    }
+
+    /// Test: GetByIdAsync retourne null quand l'action n'existe pas
+    [Fact]
+    public async Task GetByIdAsync_ReturnsNull_WhenNotExists()
+    {
+        // Arrange
+        var context = CreateInMemoryContext();
+        var rewardsService = new GameRewardsService(context);
+        var service = new GameActionService(context, rewardsService);
+
+        var nonExistentId = Guid.NewGuid();
+
+        // Act
+        var result = await service.GetByIdAsync(nonExistentId);
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    /// Test: GetAllAsync retourne toutes les actions
+    [Fact]
+    public async Task GetAllAsync_ReturnsAllActions()
+    {
+        // Arrange
+        var (context, session, _) = await SetupTestDataAsync();
+
+        var action1 = new GameAction
+        {
+            Id = Guid.NewGuid(),
+            GameSessionId = session.Id,
+            Type = ActionType.Combat,
+            Result = GameActionResult.Victory,
+            PointsChange = 15,
+            HealthChange = 0,
+            RoomNumber = 1,
+            Timestamp = DateTime.UtcNow.AddMinutes(-10)
+        };
+
+        var action2 = new GameAction
+        {
+            Id = Guid.NewGuid(),
+            GameSessionId = session.Id,
+            Type = ActionType.Search,
+            Result = GameActionResult.FoundTreasure,
+            PointsChange = 20,
+            HealthChange = 0,
+            RoomNumber = 2,
+            Timestamp = DateTime.UtcNow
+        };
+
+        context.GameActions.AddRange(action1, action2);
+        await context.SaveChangesAsync();
+
+        var rewardsService = new GameRewardsService(context);
+        var service = new GameActionService(context, rewardsService);
+
+        // Act
+        var result = await service.GetAllAsync();
+
+        // Assert
+        Assert.Equal(2, result.Count);
+        Assert.Contains(result, a => a.Id == action1.Id);
+        Assert.Contains(result, a => a.Id == action2.Id);
+    }
+
+    /// Test: DeleteAsync supprime une action avec succès
+    [Fact]
+    public async Task DeleteAsync_DeletesAction_WhenExists()
+    {
+        // Arrange
+        var (context, session, _) = await SetupTestDataAsync();
+
+        var action = new GameAction
+        {
+            Id = Guid.NewGuid(),
+            GameSessionId = session.Id,
+            Type = ActionType.Combat,
+            Result = GameActionResult.Victory,
+            PointsChange = 15,
+            HealthChange = 0,
+            RoomNumber = 1,
+            Timestamp = DateTime.UtcNow
+        };
+
+        context.GameActions.Add(action);
+        await context.SaveChangesAsync();
+
+        var rewardsService = new GameRewardsService(context);
+        var service = new GameActionService(context, rewardsService);
+
+        // Act
+        var result = await service.DeleteAsync(action.Id);
+
+        // Assert
+        Assert.True(result);
+        var deleted = await context.GameActions.FindAsync(action.Id);
+        Assert.Null(deleted);
+    }
+
+    /// Test: DeleteAsync retourne false quand l'action n'existe pas
+    [Fact]
+    public async Task DeleteAsync_ReturnsFalse_WhenNotExists()
+    {
+        // Arrange
+        var context = CreateInMemoryContext();
+        var rewardsService = new GameRewardsService(context);
+        var service = new GameActionService(context, rewardsService);
+
+        var nonExistentId = Guid.NewGuid();
+
+        // Act
+        var result = await service.DeleteAsync(nonExistentId);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    /// Test: CreateAsync crée une nouvelle action avec succès
+    [Fact]
+    public async Task CreateAsync_CreatesAction_Successfully()
+    {
+        // Arrange
+        var (context, session, _) = await SetupTestDataAsync();
+        var rewardsService = new GameRewardsService(context);
+        var service = new GameActionService(context, rewardsService);
+
+        var newAction = new GameAction
+        {
+            GameSessionId = session.Id,
+            Type = ActionType.Combat,
+            Result = GameActionResult.Victory,
+            PointsChange = 15,
+            HealthChange = 0,
+            RoomNumber = 1
+        };
+
+        // Act
+        var result = await service.CreateAsync(newAction);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.NotEqual(Guid.Empty, result.Id);
+        Assert.Equal(ActionType.Combat, result.Type);
+        Assert.Equal(GameActionResult.Victory, result.Result);
+
+        var savedAction = await context.GameActions.FindAsync(result.Id);
+        Assert.NotNull(savedAction);
+    }
+
+    /// Test: UpdateAsync met à jour une action existante
+    [Fact]
+    public async Task UpdateAsync_UpdatesAction_WhenExists()
+    {
+        // Arrange
+        var (context, session, _) = await SetupTestDataAsync();
+        var rewardsService = new GameRewardsService(context);
+        var service = new GameActionService(context, rewardsService);
+
+        var action = new GameAction
+        {
+            Id = Guid.NewGuid(),
+            GameSessionId = session.Id,
+            Type = ActionType.Combat,
+            Result = GameActionResult.Victory,
+            PointsChange = 15,
+            HealthChange = 0,
+            RoomNumber = 1,
+            Timestamp = DateTime.UtcNow
+        };
+        context.GameActions.Add(action);
+        await context.SaveChangesAsync();
+
+        var updatedAction = new GameAction
+        {
+            Type = ActionType.Search,
+            Result = GameActionResult.FoundTreasure,
+            PointsChange = 25,
+            HealthChange = 0,
+            RoomNumber = 2
+        };
+
+        // Act
+        var result = await service.UpdateAsync(action.Id, updatedAction);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(ActionType.Search, result.Type);
+        Assert.Equal(GameActionResult.FoundTreasure, result.Result);
+        Assert.Equal(25, result.PointsChange);
+        Assert.Equal(2, result.RoomNumber);
+    }
+
+    /// Test: UpdateAsync retourne null quand l'action n'existe pas
+    [Fact]
+    public async Task UpdateAsync_ReturnsNull_WhenNotExists()
+    {
+        // Arrange
+        var context = CreateInMemoryContext();
+        var rewardsService = new GameRewardsService(context);
+        var service = new GameActionService(context, rewardsService);
+
+        var nonExistentId = Guid.NewGuid();
+        var action = new GameAction
+        {
+            Type = ActionType.Combat,
+            Result = GameActionResult.Victory,
+            PointsChange = 15,
+            HealthChange = 0,
+            RoomNumber = 1
+        };
+
+        // Act
+        var result = await service.UpdateAsync(nonExistentId, action);
+
+        // Assert
+        Assert.Null(result);
+    }
 }
 

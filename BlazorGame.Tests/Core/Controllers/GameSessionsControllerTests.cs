@@ -275,5 +275,242 @@ public class GameSessionsControllerTests
         var returnedSession = Assert.IsType<GameSession>(okResult.Value);
         Assert.Equal(session.Id, returnedSession.Id);
     }
+
+    /// Test: GetAll retourne Ok avec toutes les sessions
+    [Fact]
+    public async Task GetAll_ReturnsOk_WithAllSessions()
+    {
+        // Arrange
+        var (context, controller, user) = await SetupTestDataAsync();
+
+        var session1 = new GameSession
+        {
+            Id = Guid.NewGuid(),
+            PlayerId = user.Id,
+            Score = 100,
+            Status = GameStatus.Completed,
+            TotalRooms = 5,
+            GeneratedRoomsJson = "[]"
+        };
+
+        var session2 = new GameSession
+        {
+            Id = Guid.NewGuid(),
+            PlayerId = user.Id,
+            Score = 50,
+            Status = GameStatus.InProgress,
+            TotalRooms = 5,
+            GeneratedRoomsJson = "[]"
+        };
+
+        context.GameSessions.AddRange(session1, session2);
+        await context.SaveChangesAsync();
+
+        // Act
+        var result = await controller.GetAll();
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var sessions = Assert.IsType<List<GameSession>>(okResult.Value);
+        Assert.Equal(2, sessions.Count);
+    }
+
+    /// Test: Update retourne Ok avec la session mise à jour
+    [Fact]
+    public async Task Update_ReturnsOk_WhenUpdateSucceeds()
+    {
+        // Arrange
+        var (context, controller, user) = await SetupTestDataAsync();
+
+        var session = new GameSession
+        {
+            Id = Guid.NewGuid(),
+            PlayerId = user.Id,
+            Score = 50,
+            CurrentHealth = 100,
+            Status = GameStatus.InProgress,
+            TotalRooms = 5,
+            GeneratedRoomsJson = "[]"
+        };
+        context.GameSessions.Add(session);
+        await context.SaveChangesAsync();
+
+        var updatedSession = new GameSession
+        {
+            Id = session.Id,
+            Score = 100,
+            CurrentHealth = 80,
+            Status = GameStatus.InProgress,
+            TotalRooms = 5,
+            GeneratedRoomsJson = "[]"
+        };
+
+        // Act
+        var result = await controller.Update(session.Id, updatedSession);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var returnedSession = Assert.IsType<GameSession>(okResult.Value);
+        Assert.Equal(100, returnedSession.Score);
+        Assert.Equal(80, returnedSession.CurrentHealth);
+    }
+
+    /// Test: Update retourne NotFound quand la session n'existe pas
+    [Fact]
+    public async Task Update_ReturnsNotFound_WhenSessionNotExists()
+    {
+        // Arrange
+        var (_, controller, user) = await SetupTestDataAsync();
+
+        var nonExistentId = Guid.NewGuid();
+        var session = new GameSession
+        {
+            Id = nonExistentId,
+            Score = 100,
+            TotalRooms = 5,
+            GeneratedRoomsJson = "[]"
+        };
+
+        // Act
+        var result = await controller.Update(nonExistentId, session);
+
+        // Assert
+        Assert.IsType<NotFoundResult>(result.Result);
+    }
+
+    /// Test: Delete retourne NoContent quand la suppression réussit
+    [Fact]
+    public async Task Delete_ReturnsNoContent_WhenDeleteSucceeds()
+    {
+        // Arrange
+        var (context, controller, user) = await SetupTestDataAsync();
+
+        var session = new GameSession
+        {
+            Id = Guid.NewGuid(),
+            PlayerId = user.Id,
+            Score = 50,
+            Status = GameStatus.Completed,
+            TotalRooms = 5,
+            GeneratedRoomsJson = "[]"
+        };
+        context.GameSessions.Add(session);
+        await context.SaveChangesAsync();
+
+        // Act
+        var result = await controller.Delete(session.Id);
+
+        // Assert
+        Assert.IsType<NoContentResult>(result);
+    }
+
+    /// Test: Delete retourne NotFound quand la session n'existe pas
+    [Fact]
+    public async Task Delete_ReturnsNotFound_WhenSessionNotExists()
+    {
+        // Arrange
+        var (_, controller, _) = await SetupTestDataAsync();
+
+        var nonExistentId = Guid.NewGuid();
+
+        // Act
+        var result = await controller.Delete(nonExistentId);
+
+        // Assert
+        Assert.IsType<NotFoundResult>(result);
+    }
+
+    /// Test: GetById retourne NotFound quand la session n'existe pas
+    [Fact]
+    public async Task GetById_ReturnsNotFound_WhenSessionNotExists()
+    {
+        // Arrange
+        var (_, controller, _) = await SetupTestDataAsync();
+
+        var nonExistentId = Guid.NewGuid();
+
+        // Act
+        var result = await controller.GetById(nonExistentId);
+
+        // Assert
+        Assert.IsType<NotFoundResult>(result.Result);
+    }
+
+    /// Test: PerformAction retourne NotFound quand la session n'existe pas
+    [Fact]
+    public async Task PerformAction_ReturnsNotFound_WhenSessionNotExists()
+    {
+        // Arrange
+        var (_, controller, _) = await SetupTestDataAsync();
+
+        var nonExistentId = Guid.NewGuid();
+        var request = new PerformActionRequest(ActionType.Flee);
+
+        // Act
+        var result = await controller.PerformAction(nonExistentId, request);
+
+        // Assert
+        Assert.IsType<NotFoundObjectResult>(result.Result);
+    }
+
+    /// Test: PerformAction retourne BadRequest quand la session ne peut pas continuer
+    [Fact]
+    public async Task PerformAction_ReturnsBadRequest_WhenSessionCannotContinue()
+    {
+        // Arrange
+        var (context, controller, user) = await SetupTestDataAsync();
+
+        var session = new GameSession
+        {
+            Id = Guid.NewGuid(),
+            PlayerId = user.Id,
+            Score = 50,
+            CurrentHealth = 0, // Santé à 0
+            CurrentRoomIndex = 0,
+            Status = GameStatus.Failed,
+            TotalRooms = 5,
+            GeneratedRoomsJson = "[]"
+        };
+        context.GameSessions.Add(session);
+        await context.SaveChangesAsync();
+
+        var request = new PerformActionRequest(ActionType.Flee);
+
+        // Act
+        var result = await controller.PerformAction(session.Id, request);
+
+        // Assert
+        Assert.IsType<BadRequestObjectResult>(result.Result);
+    }
+
+    /// Test: AbandonSession retourne NotFound quand la session n'existe pas
+    [Fact]
+    public async Task AbandonSession_ReturnsNotFound_WhenSessionNotExists()
+    {
+        // Arrange
+        var (_, controller, _) = await SetupTestDataAsync();
+
+        var nonExistentId = Guid.NewGuid();
+
+        // Act
+        var result = await controller.AbandonSession(nonExistentId);
+
+        // Assert
+        Assert.IsType<NotFoundResult>(result);
+    }
+
+    /// Test: GetPlayerCurrentSession retourne NotFound quand aucune session en cours n'existe
+    [Fact]
+    public async Task GetPlayerCurrentSession_ReturnsNotFound_WhenNoCurrentSession()
+    {
+        // Arrange
+        var (_, controller, user) = await SetupTestDataAsync();
+
+        // Act
+        var result = await controller.GetPlayerCurrentSession(user.Id);
+
+        // Assert
+        Assert.IsType<NotFoundResult>(result.Result);
+    }
 }
 

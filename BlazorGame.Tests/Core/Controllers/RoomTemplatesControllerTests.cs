@@ -222,5 +222,96 @@ public class RoomTemplatesControllerTests
         // Assert
         Assert.IsType<NoContentResult>(result);
     }
+
+    /// Test: GetById retourne NotFound quand le template n'existe pas
+    [Fact]
+    public async Task GetById_ReturnsNotFound_WhenTemplateNotExists()
+    {
+        // Arrange
+        var context = CreateInMemoryContext();
+        var service = new RoomTemplateService(context);
+        var controller = new RoomTemplatesController(service);
+
+        var nonExistentId = Guid.NewGuid();
+
+        // Act
+        var result = await controller.GetById(nonExistentId);
+
+        // Assert
+        Assert.IsType<NotFoundResult>(result.Result);
+    }
+
+    /// Test: Update retourne NotFound quand le template n'existe pas
+    [Fact]
+    public async Task Update_ReturnsNotFound_WhenTemplateNotExists()
+    {
+        // Arrange
+        var context = CreateInMemoryContext();
+        var service = new RoomTemplateService(context);
+        var controller = new RoomTemplatesController(service);
+
+        var nonExistentId = Guid.NewGuid();
+        var template = new RoomTemplate
+        {
+            Name = "Updated",
+            Description = "Test",
+            Type = RoomType.Combat,
+            IsActive = true
+        };
+
+        // Act
+        var result = await controller.Update(nonExistentId, template);
+
+        // Assert
+        Assert.IsType<NotFoundResult>(result.Result);
+    }
+
+    /// Test: Delete retourne NotFound quand le template n'existe pas
+    [Fact]
+    public async Task Delete_ReturnsNotFound_WhenTemplateNotExists()
+    {
+        // Arrange
+        var context = CreateInMemoryContext();
+        var service = new RoomTemplateService(context);
+        var controller = new RoomTemplatesController(service);
+
+        var nonExistentId = Guid.NewGuid();
+
+        // Act
+        var result = await controller.Delete(nonExistentId);
+
+        // Assert
+        Assert.IsType<NotFoundResult>(result);
+    }
+
+    /// Test: GetAll retourne une liste vide quand aucun template actif n'existe
+    [Fact]
+    public async Task GetAll_ReturnsEmptyList_WhenNoActiveTemplates()
+    {
+        // Arrange
+        var context = CreateInMemoryContext();
+        var service = new RoomTemplateService(context);
+        var controller = new RoomTemplatesController(service);
+
+        var inactiveTemplate = new RoomTemplate
+        {
+            Id = Guid.NewGuid(),
+            Name = "Inactive Room",
+            Description = "Test",
+            Type = RoomType.Search,
+            IsActive = false
+        };
+
+        context.RoomTemplates.Add(inactiveTemplate);
+        await context.SaveChangesAsync();
+
+        // Act
+        var result = await controller.GetAll();
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result.Result);
+        var templates = Assert.IsType<List<RoomTemplate>>(okResult.Value);
+        Assert.Empty(templates);
+    }
 }
 
