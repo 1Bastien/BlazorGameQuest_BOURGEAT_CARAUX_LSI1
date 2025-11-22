@@ -3,6 +3,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Ajout des services au conteneur
 builder.Services.AddControllers();
+builder.Services.AddHttpClient();
 
 // Ajout des endpoints explorer
 builder.Services.AddEndpointsApiExplorer();
