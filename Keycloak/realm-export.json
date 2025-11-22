@@ -63,7 +63,7 @@
       "credentials": [
         {
           "type": "password",
-          "value": "1234",
+          "value": "admin",
           "temporary": false
         }
       ],
@@ -95,6 +95,36 @@
       "serviceAccountsEnabled": false,
       "authorizationServicesEnabled": false,
       "fullScopeAllowed": true
+    }
+  ],
+  "protocolMappers": [
+    {
+      "name": "realm roles",
+      "protocol": "openid-connect",
+      "protocolMapper": "oidc-usermodel-realm-role-mapper",
+      "consentRequired": false,
+      "config": {
+        "multivalued": "true",
+        "userinfo.token.claim": "true",
+        "id.token.claim": "true",
+        "access.token.claim": "true",
+        "claim.name": "realm_access.roles",
+        "jsonType.label": "String"
+      }
+    },
+    {
+      "name": "user id",
+      "protocol": "openid-connect",
+      "protocolMapper": "oidc-usermodel-property-mapper",
+      "consentRequired": false,
+      "config": {
+        "userinfo.token.claim": "true",
+        "user.attribute": "id",
+        "id.token.claim": "true",
+        "access.token.claim": "true",
+        "claim.name": "user_id",
+        "jsonType.label": "String"
+      }
     }
   ],
   "clientScopes": [
