@@ -60,10 +60,11 @@ public class GameSessionsControllerTests
 
         var roomService = new RoomTemplateService(context);
         var rewardsService = new GameRewardsService(context);
-        var sessionService = new GameSessionService(context, roomService, rewardsService);
+        var userService = new UserService(context);
+        var sessionService = new GameSessionService(context, roomService, rewardsService, userService);
         var actionService = new GameActionService(context, rewardsService);
 
-        var controller = new GameSessionsController(sessionService, actionService, roomService);
+        var controller = new GameSessionsController(sessionService, actionService);
 
         return (context, controller, user);
     }

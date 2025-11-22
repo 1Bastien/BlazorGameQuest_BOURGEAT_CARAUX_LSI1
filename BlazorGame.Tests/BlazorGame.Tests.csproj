@@ -25,6 +25,7 @@
     <ProjectReference Include="..\AuthenticationServices\AuthenticationServices.csproj" />
     <ProjectReference Include="..\BlazorGame.Client\BlazorGame.Client.csproj" />
     <ProjectReference Include="..\BlazorGame.Core\BlazorGame.Core.csproj" />
+    <ProjectReference Include="..\BlazorGame.Gateway\BlazorGame.Gateway.csproj" />
   </ItemGroup>
 
 </Project>

@@ -28,7 +28,8 @@ public class GameSessionServiceTests
         var context = CreateInMemoryContext();
         var roomService = new RoomTemplateService(context);
         var rewardsService = new GameRewardsService(context);
-        var service = new GameSessionService(context, roomService, rewardsService);
+        var userService = new UserService(context);
+        var service = new GameSessionService(context, roomService, rewardsService, userService);
 
         var user1 = new User { Id = Guid.NewGuid() };
         var user2 = new User { Id = Guid.NewGuid() };
@@ -82,7 +83,8 @@ public class GameSessionServiceTests
         var context = CreateInMemoryContext();
         var roomService = new RoomTemplateService(context);
         var rewardsService = new GameRewardsService(context);
-        var service = new GameSessionService(context, roomService, rewardsService);
+        var userService = new UserService(context);
+        var service = new GameSessionService(context, roomService, rewardsService, userService);
 
         var userId = Guid.NewGuid();
 
@@ -101,7 +103,8 @@ public class GameSessionServiceTests
         var context = CreateInMemoryContext();
         var roomService = new RoomTemplateService(context);
         var rewardsService = new GameRewardsService(context);
-        var service = new GameSessionService(context, roomService, rewardsService);
+        var userService = new UserService(context);
+        var service = new GameSessionService(context, roomService, rewardsService, userService);
 
         var user = new User { Id = Guid.NewGuid() };
         context.Users.Add(user);
@@ -134,7 +137,8 @@ public class GameSessionServiceTests
         var context = CreateInMemoryContext();
         var roomService = new RoomTemplateService(context);
         var rewardsService = new GameRewardsService(context);
-        var service = new GameSessionService(context, roomService, rewardsService);
+        var userService = new UserService(context);
+        var service = new GameSessionService(context, roomService, rewardsService, userService);
 
         var nonExistentId = Guid.NewGuid();
 
@@ -153,7 +157,8 @@ public class GameSessionServiceTests
         var context = CreateInMemoryContext();
         var roomService = new RoomTemplateService(context);
         var rewardsService = new GameRewardsService(context);
-        var service = new GameSessionService(context, roomService, rewardsService);
+        var userService = new UserService(context);
+        var service = new GameSessionService(context, roomService, rewardsService, userService);
 
         var user = new User { Id = Guid.NewGuid() };
         context.Users.Add(user);
@@ -199,7 +204,8 @@ public class GameSessionServiceTests
         var context = CreateInMemoryContext();
         var roomService = new RoomTemplateService(context);
         var rewardsService = new GameRewardsService(context);
-        var service = new GameSessionService(context, roomService, rewardsService);
+        var userService = new UserService(context);
+        var service = new GameSessionService(context, roomService, rewardsService, userService);
 
         var config = new GameRewards
         {
@@ -224,7 +230,8 @@ public class GameSessionServiceTests
         var context = CreateInMemoryContext();
         var roomService = new RoomTemplateService(context);
         var rewardsService = new GameRewardsService(context);
-        var service = new GameSessionService(context, roomService, rewardsService);
+        var userService = new UserService(context);
+        var service = new GameSessionService(context, roomService, rewardsService, userService);
 
         var user = new User { Id = Guid.NewGuid() };
         context.Users.Add(user);
@@ -270,7 +277,8 @@ public class GameSessionServiceTests
         var context = CreateInMemoryContext();
         var roomService = new RoomTemplateService(context);
         var rewardsService = new GameRewardsService(context);
-        var service = new GameSessionService(context, roomService, rewardsService);
+        var userService = new UserService(context);
+        var service = new GameSessionService(context, roomService, rewardsService, userService);
 
         var nonExistentId = Guid.NewGuid();
         var session = new GameSession
@@ -297,7 +305,8 @@ public class GameSessionServiceTests
         var context = CreateInMemoryContext();
         var roomService = new RoomTemplateService(context);
         var rewardsService = new GameRewardsService(context);
-        var service = new GameSessionService(context, roomService, rewardsService);
+        var userService = new UserService(context);
+        var service = new GameSessionService(context, roomService, rewardsService, userService);
 
         var user = new User { Id = Guid.NewGuid() };
         context.Users.Add(user);
@@ -331,7 +340,8 @@ public class GameSessionServiceTests
         var context = CreateInMemoryContext();
         var roomService = new RoomTemplateService(context);
         var rewardsService = new GameRewardsService(context);
-        var service = new GameSessionService(context, roomService, rewardsService);
+        var userService = new UserService(context);
+        var service = new GameSessionService(context, roomService, rewardsService, userService);
 
         var nonExistentId = Guid.NewGuid();
 
@@ -350,7 +360,8 @@ public class GameSessionServiceTests
         var context = CreateInMemoryContext();
         var roomService = new RoomTemplateService(context);
         var rewardsService = new GameRewardsService(context);
-        var service = new GameSessionService(context, roomService, rewardsService);
+        var userService = new UserService(context);
+        var service = new GameSessionService(context, roomService, rewardsService, userService);
 
         var session = new GameSession
         {
@@ -377,7 +388,8 @@ public class GameSessionServiceTests
         var context = CreateInMemoryContext();
         var roomService = new RoomTemplateService(context);
         var rewardsService = new GameRewardsService(context);
-        var service = new GameSessionService(context, roomService, rewardsService);
+        var userService = new UserService(context);
+        var service = new GameSessionService(context, roomService, rewardsService, userService);
 
         // Session avec santé à 0
         var session1 = new GameSession
@@ -426,7 +438,8 @@ public class GameSessionServiceTests
         var context = CreateInMemoryContext();
         var roomService = new RoomTemplateService(context);
         var rewardsService = new GameRewardsService(context);
-        var service = new GameSessionService(context, roomService, rewardsService);
+        var userService = new UserService(context);
+        var service = new GameSessionService(context, roomService, rewardsService, userService);
 
         var user = new User { Id = Guid.NewGuid() };
         context.Users.Add(user);
@@ -475,7 +488,8 @@ public class GameSessionServiceTests
         var context = CreateInMemoryContext();
         var roomService = new RoomTemplateService(context);
         var rewardsService = new GameRewardsService(context);
-        var service = new GameSessionService(context, roomService, rewardsService);
+        var userService = new UserService(context);
+        var service = new GameSessionService(context, roomService, rewardsService, userService);
 
         var user = new User { Id = Guid.NewGuid() };
         context.Users.Add(user);
@@ -508,7 +522,8 @@ public class GameSessionServiceTests
         var context = CreateInMemoryContext();
         var roomService = new RoomTemplateService(context);
         var rewardsService = new GameRewardsService(context);
-        var service = new GameSessionService(context, roomService, rewardsService);
+        var userService = new UserService(context);
+        var service = new GameSessionService(context, roomService, rewardsService, userService);
 
         var user1 = new User { Id = Guid.NewGuid() };
         var user2 = new User { Id = Guid.NewGuid() };
@@ -552,7 +567,8 @@ public class GameSessionServiceTests
         var context = CreateInMemoryContext();
         var roomService = new RoomTemplateService(context);
         var rewardsService = new GameRewardsService(context);
-        var service = new GameSessionService(context, roomService, rewardsService);
+        var userService = new UserService(context);
+        var service = new GameSessionService(context, roomService, rewardsService, userService);
 
         var user = new User { Id = Guid.NewGuid() };
         context.Users.Add(user);
@@ -584,7 +600,8 @@ public class GameSessionServiceTests
         var context = CreateInMemoryContext();
         var roomService = new RoomTemplateService(context);
         var rewardsService = new GameRewardsService(context);
-        var service = new GameSessionService(context, roomService, rewardsService);
+        var userService = new UserService(context);
+        var service = new GameSessionService(context, roomService, rewardsService, userService);
 
         var nonExistentId = Guid.NewGuid();
 
