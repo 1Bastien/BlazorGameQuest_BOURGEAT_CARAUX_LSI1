@@ -4,6 +4,7 @@
 @using SharedModels.Enums
 @inject GameService GameService
 @inject NavigationManager NavigationManager
+@inject AuthService AuthService
 
 <PageTitle>Nouvelle Aventure</PageTitle>
 
@@ -220,7 +221,24 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _playerId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        // Vérifier l'authentification
+        var isAuthenticated = await AuthService.IsAuthenticatedAsync();
+        if (!isAuthenticated)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
+        var userId = await AuthService.GetUserIdAsync();
+        if (userId.HasValue)
+        {
+            _playerId = userId.Value;
+        }
+        else
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
         
         await CheckExistingSession();
         

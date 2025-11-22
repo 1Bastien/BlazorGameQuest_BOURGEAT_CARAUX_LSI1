@@ -1,0 +1,100 @@
+@page "/login"
+@inject AuthService AuthService
+@inject NavigationManager Navigation
+
+@* Page de connexion *@
+
+<PageTitle>Connexion</PageTitle>
+
+<div class="fixed inset-0 bg-medieval-dark/50 flex items-center justify-center z-50">
+    <div class="container mx-auto px-4 max-w-md">
+        <div class="card p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-medieval mb-2">Connexion</h1>
+                <p class="text-medieval-light">Connectez-vous pour commencer votre aventure</p>
+            </div>
+
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <div class="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded mb-4">
+                    @_errorMessage
+                </div>
+            }
+
+            <form @onsubmit="HandleLogin" class="space-y-6">
+                <div>
+                    <label for="username" class="block text-sm font-medieval mb-2">Nom d'utilisateur</label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        @bind="_username" 
+                        class="w-full px-4 py-2 bg-medieval-secondary border border-medieval-accent/30 rounded focus:outline-none focus:border-medieval-accent text-white"
+                        required 
+                    />
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-medieval mb-2">Mot de passe</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        @bind="_password" 
+                        class="w-full px-4 py-2 bg-medieval-secondary border border-medieval-accent/30 rounded focus:outline-none focus:border-medieval-accent text-white"
+                        required 
+                    />
+                </div>
+
+                <button 
+                    type="submit" 
+                    class="w-full btn-primary py-3"
+                    disabled="@_isLoading"
+                >
+                    @if (_isLoading)
+                    {
+                        <span>Connexion en cours...</span>
+                    }
+                    else
+                    {
+                        <span>Se connecter</span>
+                    }
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string _username = "";
+    private string _password = "";
+    private string? _errorMessage;
+    private bool _isLoading = false;
+
+    private async Task HandleLogin()
+    {
+        _isLoading = true;
+        _errorMessage = null;
+
+        try
+        {
+            var success = await AuthService.LoginAsync(_username, _password);
+            
+            if (success)
+            {
+                Navigation.NavigateTo("/", true);
+            }
+            else
+            {
+                _errorMessage = "Nom d'utilisateur ou mot de passe incorrect";
+            }
+        }
+        catch (Exception)
+        {
+            _errorMessage = "Une erreur est survenue lors de la connexion";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+}
+

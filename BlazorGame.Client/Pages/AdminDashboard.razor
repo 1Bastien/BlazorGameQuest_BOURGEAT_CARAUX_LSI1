@@ -1,5 +1,8 @@
 @page "/admin-dashboard"
 @using BlazorGame.Client.Components.Admin
+@using BlazorGame.Client.Services
+@inject AuthService AuthService
+@inject NavigationManager NavigationManager
 
 @* Page de tableau de bord administrateur *@
 
@@ -65,6 +68,24 @@
 
 @code {
     private string _activeTab = "rewards";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Vérifier l'authentification et les droits admin
+        var isAuthenticated = await AuthService.IsAuthenticatedAsync();
+        if (!isAuthenticated)
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
+        var isAdmin = await AuthService.IsAdminAsync();
+        if (!isAdmin)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+    }
 
     private void SetActiveTab(string tab)
     {

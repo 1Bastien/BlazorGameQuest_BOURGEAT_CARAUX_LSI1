@@ -1,10 +1,10 @@
 @inherits ComponentBase
 @implements IAsyncDisposable
 @inject IJSRuntime JSRuntime
+@inject AuthService AuthService
+@inject NavigationManager Navigation
 
-@* Composant UserMenu pour le menu utilisateur, quand on clique sur l'icône de l'utilisateur
- * Pour le moment le service d'authentification n'est pas implémenté, donc on a accès à toutes les pages
- *@
+@* Composant UserMenu pour le menu utilisateur *@
 
 <div class="user-menu relative" @ref="_menuElement" @onclick:stopPropagation>
     <button @onclick="ToggleUserMenu" class="hover:opacity-100">
@@ -15,28 +15,56 @@
     
     @if (_isUserMenuOpen)
     {
-            <div class="py-2 user-menu-dropdown">
+        <div class="py-2 user-menu-dropdown">
+            @if (_isAuthenticated)
+            {
                 <a href="/new-adventure" @onclick="CloseUserMenu" class="block px-4 py-2 text-white hover:bg-white/10">
                     Jouer
-                </a>
-                <a href="/account" @onclick="CloseUserMenu" class="block px-4 py-2 text-white hover:bg-white/10">
-                    Mon Compte
                 </a>
                 <a href="/history" @onclick="CloseUserMenu" class="block px-4 py-2 text-white hover:bg-white/10">
                     Mon Historique
                 </a>
-                <a href="/admin-dashboard" @onclick="CloseUserMenu" class="block px-4 py-2 text-white hover:bg-white/10">
-                    Administration
+                @if (_isAdmin)
+                {
+                    <a href="/admin-dashboard" @onclick="CloseUserMenu" class="block px-4 py-2 text-white hover:bg-white/10">
+                        Administration
+                    </a>
+                }
+                <button @onclick="HandleLogout" class="block w-full text-left px-4 py-2 text-white hover:bg-white/10">
+                    Déconnexion
+                </button>
+            }
+            else
+            {
+                <a href="/login" @onclick="CloseUserMenu" class="block px-4 py-2 text-white hover:bg-white/10">
+                    Se connecter
                 </a>
-            </div>
+            }
+        </div>
     }
 </div>
 
 @code {
     private bool _isUserMenuOpen;
+    private bool _isAuthenticated;
+    private bool _isAdmin;
     private ElementReference _menuElement;
     private IJSObjectReference? _jsModule;
     private DotNetObjectReference<UserMenu>? _objRef;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UpdateAuthState();
+    }
+
+    private async Task UpdateAuthState()
+    {
+        _isAuthenticated = await AuthService.IsAuthenticatedAsync();
+        if (_isAuthenticated)
+        {
+            _isAdmin = await AuthService.IsAdminAsync();
+        }
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -66,6 +94,13 @@
     {
         _isUserMenuOpen = false;
         StateHasChanged();
+    }
+
+    private async Task HandleLogout()
+    {
+        await AuthService.LogoutAsync();
+        CloseUserMenu();
+        Navigation.NavigateTo("/", true);
     }
 
     public async ValueTask DisposeAsync()
