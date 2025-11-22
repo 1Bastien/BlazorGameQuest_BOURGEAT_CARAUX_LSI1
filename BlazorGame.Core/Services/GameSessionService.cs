@@ -14,16 +14,19 @@ public class GameSessionService
     private readonly GameDbContext _context;
     private readonly RoomTemplateService _roomService;
     private readonly GameRewardsService _rewardsService;
-    private static readonly Random _random = new();
+    private readonly UserService _userService;
+    private static readonly Random Random = new();
 
     public GameSessionService(
         GameDbContext context,
         RoomTemplateService roomService,
-        GameRewardsService rewardsService)
+        GameRewardsService rewardsService,
+        UserService userService)
     {
         _context = context;
         _roomService = roomService;
         _rewardsService = rewardsService;
+        _userService = userService;
     }
 
     /// Récupère une session de jeu par son identifiant
@@ -38,6 +41,9 @@ public class GameSessionService
     /// Crée une nouvelle session de jeu avec un nombre fixe de salles générées aléatoirement
     public async Task<GameSession> CreateNewSessionAsync(Guid playerId)
     {
+        // Vérifier si l'utilisateur existe, sinon le créer (utilisateurs Keycloak)
+        await _userService.EnsureUserExistsAsync(playerId);
+
         var config = await _rewardsService.GetConfigAsync();
         if (config == null) throw new InvalidOperationException("GameRewards not configured");
 
@@ -48,7 +54,7 @@ public class GameSessionService
         var selectedRoomIds = new List<Guid>();
         for (int i = 0; i < roomCount; i++)
         {
-            var randomTemplate = allTemplates[_random.Next(allTemplates.Count)];
+            var randomTemplate = allTemplates[Random.Next(allTemplates.Count)];
             selectedRoomIds.Add(randomTemplate.Id);
         }
 

@@ -1,7 +1,7 @@
 using BlazorGame.Core.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SharedModels.Entities;
-using SharedModels.Enums;
 
 namespace BlazorGame.Core.Controllers;
 
@@ -9,7 +9,8 @@ namespace BlazorGame.Core.Controllers;
 /// Controller pour la gestion des modèles de salles de fouille
 /// </summary>
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
+[Authorize]
 public class RoomTemplatesController : ControllerBase
 {
     private readonly RoomTemplateService _service;
@@ -21,6 +22,7 @@ public class RoomTemplatesController : ControllerBase
 
     /// Récupère tous les modèles de salles de fouille actives
     [HttpGet]
+    [AllowAnonymous]
     public async Task<ActionResult<List<RoomTemplate>>> GetAll()
     {
         var templates = await _service.GetAllAsync();
@@ -29,6 +31,7 @@ public class RoomTemplatesController : ControllerBase
 
     /// Récupère tous les modèles de salles pour l'administration
     [HttpGet("admin")]
+    [Authorize(Roles = "administrateur")]
     public async Task<ActionResult<List<RoomTemplate>>> GetAllForAdmin()
     {
         var templates = await _service.GetAllIncludingInactiveAsync();
@@ -41,12 +44,13 @@ public class RoomTemplatesController : ControllerBase
     {
         var template = await _service.GetByIdAsync(id);
         if (template == null) return NotFound();
-        
+
         return Ok(template);
     }
 
     /// Crée un nouveau modèle de salle de fouille
     [HttpPost]
+    [Authorize(Roles = "administrateur")]
     public async Task<ActionResult<RoomTemplate>> Create([FromBody] RoomTemplate template)
     {
         var created = await _service.CreateAsync(template);
@@ -55,21 +59,23 @@ public class RoomTemplatesController : ControllerBase
 
     /// Met à jour un modèle de salle de fouille existant
     [HttpPut("{id}")]
+    [Authorize(Roles = "administrateur")]
     public async Task<ActionResult<RoomTemplate>> Update(Guid id, [FromBody] RoomTemplate template)
     {
         var updated = await _service.UpdateAsync(id, template);
         if (updated == null) return NotFound();
-        
+
         return Ok(updated);
     }
 
     /// Supprime un modèle de salle de fouille
     [HttpDelete("{id}")]
+    [Authorize(Roles = "administrateur")]
     public async Task<ActionResult> Delete(Guid id)
     {
         var result = await _service.DeleteAsync(id);
         if (!result) return NotFound();
-        
+
         return NoContent();
     }
 }

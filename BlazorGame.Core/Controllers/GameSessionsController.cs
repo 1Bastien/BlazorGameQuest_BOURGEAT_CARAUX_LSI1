@@ -1,4 +1,5 @@
 using BlazorGame.Core.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SharedModels.Entities;
 using SharedModels.Enums;
@@ -9,21 +10,19 @@ namespace BlazorGame.Core.Controllers;
 /// Controller pour la gestion des sessions de jeu
 /// </summary>
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
+[Authorize]
 public class GameSessionsController : ControllerBase
 {
     private readonly GameSessionService _sessionService;
     private readonly GameActionService _actionService;
-    private readonly RoomTemplateService _roomService;
 
     public GameSessionsController(
         GameSessionService sessionService,
-        GameActionService actionService,
-        RoomTemplateService roomService)
+        GameActionService actionService)
     {
         _sessionService = sessionService;
         _actionService = actionService;
-        _roomService = roomService;
     }
 
     /// Récupère une session de jeu par son identifiant
@@ -106,6 +105,7 @@ public class GameSessionsController : ControllerBase
 
     /// Récupère toutes les sessions de jeu
     [HttpGet]
+    [AllowAnonymous]
     public async Task<ActionResult<List<GameSession>>> GetAll()
     {
         var sessions = await _sessionService.GetAllAsync();
@@ -114,6 +114,7 @@ public class GameSessionsController : ControllerBase
 
     /// Met à jour une session de jeu
     [HttpPut("{id}")]
+    [Authorize(Roles = "administrateur")]
     public async Task<ActionResult<GameSession>> Update(Guid id, [FromBody] GameSession session)
     {
         var updated = await _sessionService.UpdateSessionAsync(id, session);
@@ -124,6 +125,7 @@ public class GameSessionsController : ControllerBase
 
     /// Supprime une session de jeu
     [HttpDelete("{id}")]
+    [Authorize(Roles = "administrateur")]
     public async Task<ActionResult> Delete(Guid id)
     {
         var result = await _sessionService.DeleteAsync(id);

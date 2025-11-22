@@ -1,4 +1,5 @@
 using BlazorGame.Core.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SharedModels.Entities;
 
@@ -8,7 +9,8 @@ namespace BlazorGame.Core.Controllers;
 /// Controller pour la gestion de la configuration des récompenses et pénalités
 /// </summary>
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
+[Authorize]
 public class GameRewardsController : ControllerBase
 {
     private readonly GameRewardsService _service;
@@ -20,6 +22,7 @@ public class GameRewardsController : ControllerBase
 
     /// Récupère la configuration des récompenses et pénalités
     [HttpGet]
+    [AllowAnonymous]
     public async Task<ActionResult<GameRewards>> GetConfig()
     {
         var config = await _service.GetConfigAsync();
@@ -30,6 +33,7 @@ public class GameRewardsController : ControllerBase
 
     /// Met à jour la configuration des récompenses et pénalités
     [HttpPut]
+    [Authorize(Roles = "administrateur")]
     public async Task<ActionResult<GameRewards>> UpdateConfig([FromBody] GameRewards config)
     {
         try
@@ -45,6 +49,7 @@ public class GameRewardsController : ControllerBase
 
     /// Crée une nouvelle configuration des récompenses
     [HttpPost]
+    [Authorize(Roles = "administrateur")]
     public async Task<ActionResult<GameRewards>> CreateConfig([FromBody] GameRewards config)
     {
         var created = await _service.CreateConfigAsync(config);
@@ -53,6 +58,7 @@ public class GameRewardsController : ControllerBase
 
     /// Supprime la configuration des récompenses
     [HttpDelete]
+    [Authorize(Roles = "administrateur")]
     public async Task<ActionResult> DeleteConfig()
     {
         var result = await _service.DeleteConfigAsync();

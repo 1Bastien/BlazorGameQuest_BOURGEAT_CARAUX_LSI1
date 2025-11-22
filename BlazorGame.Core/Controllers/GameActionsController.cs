@@ -1,7 +1,7 @@
 using BlazorGame.Core.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SharedModels.Entities;
-using SharedModels.Enums;
 
 namespace BlazorGame.Core.Controllers;
 
@@ -9,7 +9,8 @@ namespace BlazorGame.Core.Controllers;
 /// Controller pour la gestion des actions de jeu
 /// </summary>
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
+[Authorize]
 public class GameActionsController : ControllerBase
 {
     private readonly GameActionService _service;
@@ -39,6 +40,7 @@ public class GameActionsController : ControllerBase
 
     /// Crée une nouvelle action de jeu
     [HttpPost]
+    [Authorize(Roles = "administrateur")]
     public async Task<ActionResult<GameAction>> Create([FromBody] GameAction action)
     {
         var created = await _service.CreateAsync(action);
@@ -47,6 +49,7 @@ public class GameActionsController : ControllerBase
 
     /// Met à jour une action de jeu existante
     [HttpPut("{id}")]
+    [Authorize(Roles = "administrateur")]
     public async Task<ActionResult<GameAction>> Update(Guid id, [FromBody] GameAction action)
     {
         var updated = await _service.UpdateAsync(id, action);
@@ -57,6 +60,7 @@ public class GameActionsController : ControllerBase
 
     /// Supprime une action de jeu
     [HttpDelete("{id}")]
+    [Authorize(Roles = "administrateur")]
     public async Task<ActionResult> Delete(Guid id)
     {
         var result = await _service.DeleteAsync(id);

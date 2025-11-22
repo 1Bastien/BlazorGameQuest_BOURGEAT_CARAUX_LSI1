@@ -37,15 +37,8 @@ public static class GameDbContextSeeder
             }
         );
 
-        // Utilisateur de test (ID Keycloak simulé)
-        var playerId = Guid.Parse("22222222-2222-2222-2222-222222222222");
-
-        modelBuilder.Entity<User>().HasData(
-            new User
-            {
-                Id = playerId
-            }
-        );
+        // Les utilisateurs seront créés automatiquement via Keycloak
+        // lors de leur première connexion/partie
 
         // Salles de Combat
         modelBuilder.Entity<RoomTemplate>().HasData(
