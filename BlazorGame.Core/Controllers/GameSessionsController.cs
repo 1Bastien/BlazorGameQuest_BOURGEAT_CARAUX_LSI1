@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SharedModels.Entities;
 using SharedModels.Enums;
+using System.Security.Claims;
 
 namespace BlazorGame.Core.Controllers;
 
@@ -16,13 +17,16 @@ public class GameSessionsController : ControllerBase
 {
     private readonly GameSessionService _sessionService;
     private readonly GameActionService _actionService;
+    private readonly UserService _userService;
 
     public GameSessionsController(
         GameSessionService sessionService,
-        GameActionService actionService)
+        GameActionService actionService,
+        UserService userService)
     {
         _sessionService = sessionService;
         _actionService = actionService;
+        _userService = userService;
     }
 
     /// Récupère une session de jeu par son identifiant
@@ -40,6 +44,16 @@ public class GameSessionsController : ControllerBase
     [HttpPost("start")]
     public async Task<ActionResult<GameSession>> StartNewGame([FromBody] StartGameRequest request)
     {
+        // Extraire le username depuis le token JWT
+        string? username = null;
+        if (User?.Identity?.IsAuthenticated == true)
+        {
+            username = User.FindFirst("preferred_username")?.Value;
+        }
+
+        // S'assurer que l'utilisateur existe avec son username
+        await _userService.EnsureUserExistsAsync(request.PlayerId, username);
+
         var session = await _sessionService.CreateNewSessionAsync(request.PlayerId);
         return CreatedAtAction(nameof(GetById), new { id = session.Id }, session);
     }

@@ -2,6 +2,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using SharedModels.Entities;
 using SharedModels.Enums;
+using SharedModels.DTOs;
 
 namespace BlazorGame.Client.Services;
 
@@ -118,6 +119,21 @@ public class GameService
             return null;
         }
     }
+
+    /// <summary>
+    /// Récupère le classement des joueurs
+    /// </summary>
+    public async Task<List<LeaderboardEntry>?> GetLeaderboardAsync()
+    {
+        try
+        {
+            return await _httpClient.GetFromJsonAsync<List<LeaderboardEntry>>("/api/Leaderboard");
+        }
+        catch
+        {
+            return null;
+        }
+    }
 }
 
 /// <summary>
@@ -138,4 +154,5 @@ public record GameActionResponse
     public GameAction Action { get; init; } = null!;
     public GameSession UpdatedSession { get; init; } = null!;
 }
+
 
