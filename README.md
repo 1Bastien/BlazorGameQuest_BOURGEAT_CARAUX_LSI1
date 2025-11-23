@@ -8,6 +8,8 @@ Bastien BOURGEAT - Ghislain CARAUX - LSI 1 APP 2 Promo 2027
 
 ## Installation et démarrage
 
+### Lancement avec Docker
+
 ```bash
 # Lancer avec Docker
 docker-compose up --build
@@ -18,7 +20,24 @@ docker-compose down
 
 L'application sera disponible sur :
 
-- Gateway (Frontend + API) : http://localhost:5000
+- Gateway (Frontend + API) : http://localhost:3000
+- Keycloak Admin Console : http://localhost:8080/admin (admin/admin)
+
+**Documentation Swagger disponible pour tous les services :**
+
+- Gateway : http://localhost:3000/swagger
+- Authentication Service : http://localhost:5001/swagger
+- Core Service : http://localhost:5002/swagger
+
+### Comptes de test
+
+Trois comptes sont pré-configurés dans Keycloak avec des IDs fixes :
+
+- **user1** / 1234 (joueur)
+- **user2** / 1234 (joueur)
+- **admin** / admin (administrateur)
+
+Les comptes `user1` et `user2` sont automatiquement créés dans la base de données au démarrage avec des parties de démonstration. Les IDs Keycloak correspondent exactement aux IDs dans la base de données, ce qui permet au middleware `UserSyncMiddleware` de reconnaître les utilisateurs existants au lieu d'en créer de nouveaux.
 
 ## Description du projet
 
@@ -82,7 +101,8 @@ Notre frontend est organisé en trois dossiers principaux :
 
 ## Stratégie de tests
 
-Les tests sont implémentés avec xUnit, Moq et une base de données InMemory. Le projet de tests est organisé en deux catégories :
+Les tests sont implémentés avec xUnit, Moq et une base de données InMemory. Le projet de tests atteint 92% de couverture de code (hors composants et pages Blazor).
+Les tests sont organisés en plusieurs catégories :
 
 **Tests Core (BlazorGame.Core)** :
 
@@ -90,6 +110,8 @@ Les tests sont implémentés avec xUnit, Moq et une base de données InMemory. L
 - **GameActionServiceTests** : traitement des actions (combat, fouille, fuite), calcul des points et de la vie, transitions d'état
 - **RoomTemplateServiceTests** : opérations CRUD sur les modèles de salles
 - **GameRewardsServiceTests** : récupération et mise à jour de la configuration des récompenses
+- **UserSyncMiddlewareTests** : synchronisation automatique des utilisateurs Keycloak
+- **FullGameIntegrationTests** : tests d'intégration complets du flux de jeu
 - **GameSessionsControllerTests** : tests des endpoints de gestion des sessions
 - **GameActionsControllerTests** : tests des endpoints de gestion des actions de jeu
 - **GameRewardsControllerTests** : tests des endpoints de configuration des récompenses
@@ -99,6 +121,12 @@ Les tests sont implémentés avec xUnit, Moq et une base de données InMemory. L
 
 - **GameServiceTests** : tests du service de gestion des parties côté client
 - **AdminServiceTests** : tests du service d'administration côté client
+- **AuthServiceTests** : tests du service d'authentification côté client
+
+**Tests Gateway et Authentication** :
+
+- **AuthenticationMiddlewareTests** : validation JWT et gestion des erreurs
+- **AuthControllerTests** : tests des endpoints d'authentification
 
 La validation des données est assurée par les annotations Data Annotation sur les entités. Un workflow CI/CD GitHub Actions exécute automatiquement les tests à chaque push sur les branches master/main.
 
@@ -112,6 +140,9 @@ dotnet test --collect:"XPlat Code Coverage"
 
 # Générer le rapport HTML (exclut les fichiers UI Blazor)
 dotnet reportgenerator -reports:"BlazorGame.Tests/TestResults/*/coverage.cobertura.xml" -targetdir:"BlazorGame.Tests/TestResults/coverage-report" -reporttypes:Html -classfilters:"-BlazorGame.Client.Components.*;-BlazorGame.Client.Pages.*;-BlazorGame.Client.Layout.*"
+
+# Ouvrir la page dans le navigateur
+open BlazorGame.Tests/TestResults/coverage-report/index.html
 ```
 
 Le rapport sera disponible dans `BlazorGame.Tests/TestResults/coverage-report/index.html`.
