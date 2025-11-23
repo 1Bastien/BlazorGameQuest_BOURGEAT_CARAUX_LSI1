@@ -12,10 +12,13 @@ namespace BlazorGame.Tests.Client.Services;
 public class AuthServiceTests
 {
     private readonly Mock<ILocalStorageService> _mockLocalStorage;
+    private readonly Mock<GameService> _mockGameService;
 
     public AuthServiceTests()
     {
         _mockLocalStorage = new Mock<ILocalStorageService>();
+        var httpClient = new HttpClient { BaseAddress = new Uri("http://localhost") };
+        _mockGameService = new Mock<GameService>(httpClient);
     }
 
     /// Crée un HttpClient avec un handler de test personnalisé
@@ -52,15 +55,18 @@ public class AuthServiceTests
         });
 
         var httpClient = CreateTestHttpClient(handler);
-        var service = new AuthService(httpClient, _mockLocalStorage.Object);
+        var service = new AuthService(httpClient, _mockLocalStorage.Object, _mockGameService.Object);
 
         // Act
         var result = await service.LoginAsync("testuser", "password123");
 
         // Assert
-        Assert.True(result);
-        _mockLocalStorage.Verify(x => x.SetItemAsStringAsync("access_token", tokenResponse.access_token, default), Times.Once);
-        _mockLocalStorage.Verify(x => x.SetItemAsStringAsync("refresh_token", tokenResponse.refresh_token, default), Times.Once);
+        Assert.True(result.Success);
+        Assert.False(result.IsAccountDisabled);
+        _mockLocalStorage.Verify(x => x.SetItemAsStringAsync("access_token", tokenResponse.access_token, default),
+            Times.Once);
+        _mockLocalStorage.Verify(x => x.SetItemAsStringAsync("refresh_token", tokenResponse.refresh_token, default),
+            Times.Once);
     }
 
     /// Test: LoginAsync retourne false quand les credentials sont invalides
@@ -77,14 +83,16 @@ public class AuthServiceTests
         });
 
         var httpClient = CreateTestHttpClient(handler);
-        var service = new AuthService(httpClient, _mockLocalStorage.Object);
+        var service = new AuthService(httpClient, _mockLocalStorage.Object, _mockGameService.Object);
 
         // Act
         var result = await service.LoginAsync("wronguser", "wrongpassword");
 
         // Assert
-        Assert.False(result);
-        _mockLocalStorage.Verify(x => x.SetItemAsStringAsync(It.IsAny<string>(), It.IsAny<string>(), default), Times.Never);
+        Assert.False(result.Success);
+        Assert.False(result.IsAccountDisabled);
+        _mockLocalStorage.Verify(x => x.SetItemAsStringAsync(It.IsAny<string>(), It.IsAny<string>(), default),
+            Times.Never);
     }
 
     /// Test: LogoutAsync supprime les tokens du LocalStorage
@@ -104,7 +112,7 @@ public class AuthServiceTests
         });
 
         var httpClient = CreateTestHttpClient(handler);
-        var service = new AuthService(httpClient, _mockLocalStorage.Object);
+        var service = new AuthService(httpClient, _mockLocalStorage.Object, _mockGameService.Object);
 
         // Act
         await service.LogoutAsync();
@@ -122,9 +130,9 @@ public class AuthServiceTests
         _mockLocalStorage.Setup(x => x.GetItemAsStringAsync("access_token", default))
             .ReturnsAsync((string?)null);
 
-        var httpClient = CreateTestHttpClient(new TestHttpMessageHandler((_, _) => 
+        var httpClient = CreateTestHttpClient(new TestHttpMessageHandler((_, _) =>
             Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))));
-        var service = new AuthService(httpClient, _mockLocalStorage.Object);
+        var service = new AuthService(httpClient, _mockLocalStorage.Object, _mockGameService.Object);
 
         // Act
         var result = await service.IsAuthenticatedAsync();
@@ -161,15 +169,17 @@ public class AuthServiceTests
         });
 
         var httpClient = CreateTestHttpClient(handler);
-        var service = new AuthService(httpClient, _mockLocalStorage.Object);
+        var service = new AuthService(httpClient, _mockLocalStorage.Object, _mockGameService.Object);
 
         // Act
         var result = await service.RefreshTokenAsync();
 
         // Assert
         Assert.True(result);
-        _mockLocalStorage.Verify(x => x.SetItemAsStringAsync("access_token", newTokenResponse.access_token, default), Times.Once);
-        _mockLocalStorage.Verify(x => x.SetItemAsStringAsync("refresh_token", newTokenResponse.refresh_token, default), Times.Once);
+        _mockLocalStorage.Verify(x => x.SetItemAsStringAsync("access_token", newTokenResponse.access_token, default),
+            Times.Once);
+        _mockLocalStorage.Verify(x => x.SetItemAsStringAsync("refresh_token", newTokenResponse.refresh_token, default),
+            Times.Once);
     }
 
     /// Test: RefreshTokenAsync retourne false quand le refresh token est invalide
@@ -186,7 +196,7 @@ public class AuthServiceTests
         });
 
         var httpClient = CreateTestHttpClient(handler);
-        var service = new AuthService(httpClient, _mockLocalStorage.Object);
+        var service = new AuthService(httpClient, _mockLocalStorage.Object, _mockGameService.Object);
 
         // Act
         var result = await service.RefreshTokenAsync();
@@ -203,14 +213,15 @@ public class AuthServiceTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var token = $"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.{Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes($"{{\"sub\":\"{userId}\",\"exp\":{DateTimeOffset.UtcNow.AddHours(1).ToUnixTimeSeconds()}}}"))}.signature";
-        
+        var token =
+            $"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.{Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes($"{{\"sub\":\"{userId}\",\"exp\":{DateTimeOffset.UtcNow.AddHours(1).ToUnixTimeSeconds()}}}"))}.signature";
+
         _mockLocalStorage.Setup(x => x.GetItemAsStringAsync("access_token", default))
             .ReturnsAsync(token);
 
-        var httpClient = CreateTestHttpClient(new TestHttpMessageHandler((_, _) => 
+        var httpClient = CreateTestHttpClient(new TestHttpMessageHandler((_, _) =>
             Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))));
-        var service = new AuthService(httpClient, _mockLocalStorage.Object);
+        var service = new AuthService(httpClient, _mockLocalStorage.Object, _mockGameService.Object);
 
         // Act
         var result = await service.GetUserIdAsync();
@@ -228,9 +239,9 @@ public class AuthServiceTests
         _mockLocalStorage.Setup(x => x.GetItemAsStringAsync("access_token", default))
             .ReturnsAsync((string?)null);
 
-        var httpClient = CreateTestHttpClient(new TestHttpMessageHandler((_, _) => 
+        var httpClient = CreateTestHttpClient(new TestHttpMessageHandler((_, _) =>
             Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))));
-        var service = new AuthService(httpClient, _mockLocalStorage.Object);
+        var service = new AuthService(httpClient, _mockLocalStorage.Object, _mockGameService.Object);
 
         // Act
         var result = await service.GetUserIdAsync();
@@ -245,14 +256,15 @@ public class AuthServiceTests
     {
         // Arrange
         var realmAccess = "{\"roles\":[\"administrateur\",\"user\"]}";
-        var token = $"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.{Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes($"{{\"realm_access\":{realmAccess},\"exp\":{DateTimeOffset.UtcNow.AddHours(1).ToUnixTimeSeconds()}}}"))}.signature";
-        
+        var token =
+            $"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.{Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes($"{{\"realm_access\":{realmAccess},\"exp\":{DateTimeOffset.UtcNow.AddHours(1).ToUnixTimeSeconds()}}}"))}.signature";
+
         _mockLocalStorage.Setup(x => x.GetItemAsStringAsync("access_token", default))
             .ReturnsAsync(token);
 
-        var httpClient = CreateTestHttpClient(new TestHttpMessageHandler((_, _) => 
+        var httpClient = CreateTestHttpClient(new TestHttpMessageHandler((_, _) =>
             Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))));
-        var service = new AuthService(httpClient, _mockLocalStorage.Object);
+        var service = new AuthService(httpClient, _mockLocalStorage.Object, _mockGameService.Object);
 
         // Act
         var result = await service.IsAdminAsync();
@@ -269,9 +281,9 @@ public class AuthServiceTests
         _mockLocalStorage.Setup(x => x.GetItemAsStringAsync("access_token", default))
             .ReturnsAsync((string?)null);
 
-        var httpClient = CreateTestHttpClient(new TestHttpMessageHandler((_, _) => 
+        var httpClient = CreateTestHttpClient(new TestHttpMessageHandler((_, _) =>
             Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))));
-        var service = new AuthService(httpClient, _mockLocalStorage.Object);
+        var service = new AuthService(httpClient, _mockLocalStorage.Object, _mockGameService.Object);
 
         // Act
         var result = await service.IsAdminAsync();

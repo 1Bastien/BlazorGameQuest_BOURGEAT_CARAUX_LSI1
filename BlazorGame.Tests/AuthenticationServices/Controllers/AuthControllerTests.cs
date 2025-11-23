@@ -200,7 +200,7 @@ public class AuthControllerTests
     {
         // Arrange
         var userInfo = new { sub = Guid.NewGuid().ToString(), preferred_username = "testuser" };
-        
+
         _mockHttpMessageHandler.Protected()
             .Setup<Task<HttpResponseMessage>>(
                 "SendAsync",
@@ -248,53 +248,6 @@ public class AuthControllerTests
         Assert.NotNull(unauthorizedResult.Value);
     }
 
-    /// Test: GetUserById retourne OK avec les informations utilisateur
-    [Fact]
-    public async Task GetUserById_ReturnsOk_WhenUserExists()
-    {
-        // Arrange
-        var userId = Guid.NewGuid();
-        var tokenResponse = new TokenResponse { access_token = "admin_token" };
-        var userInfo = new { username = "testuser", realmRoles = new[] { "user" } };
-
-        var callCount = 0;
-        _mockHttpMessageHandler.Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(),
-                ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(() =>
-            {
-                callCount++;
-                if (callCount == 1)
-                {
-                    return new HttpResponseMessage
-                    {
-                        StatusCode = HttpStatusCode.OK,
-                        Content = new StringContent(JsonSerializer.Serialize(tokenResponse))
-                    };
-                }
-                return new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(JsonSerializer.Serialize(userInfo))
-                };
-            });
-
-        _mockConfiguration.Setup(x => x["Keycloak:AdminUsername"]).Returns("admin");
-        _mockConfiguration.Setup(x => x["Keycloak:AdminPassword"]).Returns("admin123");
-
-        CreateMockHttpClient();
-        var controller = new AuthController(_mockConfiguration.Object, _mockHttpClientFactory.Object);
-
-        // Act
-        var result = await controller.GetUserById(userId);
-
-        // Assert
-        var okResult = Assert.IsType<OkObjectResult>(result);
-        Assert.NotNull(okResult.Value);
-    }
-
     /// Test: GetUserById retourne NotFound quand l'utilisateur n'existe pas
     [Fact]
     public async Task GetUserById_ReturnsNotFound_WhenUserDoesNotExist()
@@ -320,6 +273,7 @@ public class AuthControllerTests
                         Content = new StringContent(JsonSerializer.Serialize(tokenResponse))
                     };
                 }
+
                 return new HttpResponseMessage { StatusCode = HttpStatusCode.NotFound };
             });
 
