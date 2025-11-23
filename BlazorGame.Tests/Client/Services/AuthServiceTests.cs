@@ -196,5 +196,88 @@ public class AuthServiceTests
         _mockLocalStorage.Verify(x => x.RemoveItemAsync("access_token", default), Times.Once);
         _mockLocalStorage.Verify(x => x.RemoveItemAsync("refresh_token", default), Times.Once);
     }
+
+    /// Test: GetUserIdAsync retourne le GUID depuis le token
+    [Fact]
+    public async Task GetUserIdAsync_ReturnsUserId_WhenTokenValid()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var token = $"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.{Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes($"{{\"sub\":\"{userId}\",\"exp\":{DateTimeOffset.UtcNow.AddHours(1).ToUnixTimeSeconds()}}}"))}.signature";
+        
+        _mockLocalStorage.Setup(x => x.GetItemAsStringAsync("access_token", default))
+            .ReturnsAsync(token);
+
+        var httpClient = CreateTestHttpClient(new TestHttpMessageHandler((_, _) => 
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))));
+        var service = new AuthService(httpClient, _mockLocalStorage.Object);
+
+        // Act
+        var result = await service.GetUserIdAsync();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(userId, result.Value);
+    }
+
+    /// Test: GetUserIdAsync retourne null quand il n'y a pas de token
+    [Fact]
+    public async Task GetUserIdAsync_ReturnsNull_WhenNoToken()
+    {
+        // Arrange
+        _mockLocalStorage.Setup(x => x.GetItemAsStringAsync("access_token", default))
+            .ReturnsAsync((string?)null);
+
+        var httpClient = CreateTestHttpClient(new TestHttpMessageHandler((_, _) => 
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))));
+        var service = new AuthService(httpClient, _mockLocalStorage.Object);
+
+        // Act
+        var result = await service.GetUserIdAsync();
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    /// Test: IsAdminAsync retourne true quand l'utilisateur est admin
+    [Fact]
+    public async Task IsAdminAsync_ReturnsTrue_WhenUserIsAdmin()
+    {
+        // Arrange
+        var realmAccess = "{\"roles\":[\"administrateur\",\"user\"]}";
+        var token = $"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.{Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes($"{{\"realm_access\":{realmAccess},\"exp\":{DateTimeOffset.UtcNow.AddHours(1).ToUnixTimeSeconds()}}}"))}.signature";
+        
+        _mockLocalStorage.Setup(x => x.GetItemAsStringAsync("access_token", default))
+            .ReturnsAsync(token);
+
+        var httpClient = CreateTestHttpClient(new TestHttpMessageHandler((_, _) => 
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))));
+        var service = new AuthService(httpClient, _mockLocalStorage.Object);
+
+        // Act
+        var result = await service.IsAdminAsync();
+
+        // Assert
+        Assert.True(result);
+    }
+
+    /// Test: IsAdminAsync retourne false quand l'utilisateur n'est pas admin
+    [Fact]
+    public async Task IsAdminAsync_ReturnsFalse_WhenUserIsNotAdmin()
+    {
+        // Arrange
+        _mockLocalStorage.Setup(x => x.GetItemAsStringAsync("access_token", default))
+            .ReturnsAsync((string?)null);
+
+        var httpClient = CreateTestHttpClient(new TestHttpMessageHandler((_, _) => 
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))));
+        var service = new AuthService(httpClient, _mockLocalStorage.Object);
+
+        // Act
+        var result = await service.IsAdminAsync();
+
+        // Assert
+        Assert.False(result);
+    }
 }
 

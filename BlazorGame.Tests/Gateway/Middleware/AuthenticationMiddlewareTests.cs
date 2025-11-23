@@ -97,5 +97,54 @@ public class AuthenticationMiddlewareTests
         Assert.True(nextCalled);
         Assert.NotEqual(401, context.Response.StatusCode);
     }
+
+    /// Test: La route leaderboard est publique
+    [Fact]
+    public async Task InvokeAsync_AllowsLeaderboard_WithoutToken()
+    {
+        // Arrange
+        var context = new DefaultHttpContext();
+        context.Request.Path = "/api/leaderboard";
+
+        var nextCalled = false;
+        RequestDelegate next = (HttpContext ctx) =>
+        {
+            nextCalled = true;
+            return Task.CompletedTask;
+        };
+
+        var middleware = new AuthenticationMiddleware(next);
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        Assert.True(nextCalled);
+        Assert.NotEqual(401, context.Response.StatusCode);
+    }
+
+    /// Test: Les routes non-API passent sans authentification
+    [Fact]
+    public async Task InvokeAsync_AllowsNonApiRoutes_WithoutToken()
+    {
+        // Arrange
+        var context = new DefaultHttpContext();
+        context.Request.Path = "/some/other/route";
+
+        var nextCalled = false;
+        RequestDelegate next = (HttpContext ctx) =>
+        {
+            nextCalled = true;
+            return Task.CompletedTask;
+        };
+
+        var middleware = new AuthenticationMiddleware(next);
+
+        // Act
+        await middleware.InvokeAsync(context);
+
+        // Assert
+        Assert.True(nextCalled);
+    }
 }
 

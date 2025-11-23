@@ -115,3 +115,9 @@ app.MapReverseProxy();
 app.MapFallbackToFile("index.html");
 
 app.Run();
+
+// Rendre Program accessible pour les tests
+namespace BlazorGame.Gateway
+{
+    public partial class Program { }
+}

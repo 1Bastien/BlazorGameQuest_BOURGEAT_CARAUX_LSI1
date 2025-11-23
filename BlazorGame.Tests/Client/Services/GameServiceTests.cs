@@ -351,5 +351,195 @@ public class GameServiceTests
         Assert.Equal(expectedConfig.StartingHealth, result.StartingHealth);
         Assert.Equal(expectedConfig.NumberOfRooms, result.NumberOfRooms);
     }
+
+    /// Test: StartNewGameAsync retourne null en cas d'échec
+    [Fact]
+    public async Task StartNewGameAsync_ReturnsNull_WhenFailed()
+    {
+        // Arrange
+        var handler = new TestHttpMessageHandler((request, cancellationToken) =>
+        {
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest));
+        });
+
+        var httpClient = CreateTestHttpClient(handler);
+        var service = new GameService(httpClient);
+
+        // Act
+        var result = await service.StartNewGameAsync(Guid.NewGuid());
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    /// Test: PerformActionAsync retourne null en cas d'échec
+    [Fact]
+    public async Task PerformActionAsync_ReturnsNull_WhenFailed()
+    {
+        // Arrange
+        var handler = new TestHttpMessageHandler((request, cancellationToken) =>
+        {
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest));
+        });
+
+        var httpClient = CreateTestHttpClient(handler);
+        var service = new GameService(httpClient);
+
+        // Act
+        var result = await service.PerformActionAsync(Guid.NewGuid(), ActionType.Combat);
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    /// Test: AbandonSessionAsync retourne false en cas d'échec
+    [Fact]
+    public async Task AbandonSessionAsync_ReturnsFalse_WhenFailed()
+    {
+        // Arrange
+        var handler = new TestHttpMessageHandler((request, cancellationToken) =>
+        {
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest));
+        });
+
+        var httpClient = CreateTestHttpClient(handler);
+        var service = new GameService(httpClient);
+
+        // Act
+        var result = await service.AbandonSessionAsync(Guid.NewGuid());
+
+        // Assert
+        Assert.False(result);
+    }
+
+    /// Test: GetPlayerCurrentSessionAsync retourne null en cas d'exception
+    [Fact]
+    public async Task GetPlayerCurrentSessionAsync_ReturnsNull_WhenException()
+    {
+        // Arrange
+        var handler = new TestHttpMessageHandler((request, cancellationToken) =>
+        {
+            throw new HttpRequestException("Network error");
+        });
+
+        var httpClient = CreateTestHttpClient(handler);
+        var service = new GameService(httpClient);
+
+        // Act
+        var result = await service.GetPlayerCurrentSessionAsync(Guid.NewGuid());
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    /// Test: GetGeneratedRoomIds retourne liste vide en cas de JSON invalide
+    [Fact]
+    public void GetGeneratedRoomIds_ReturnsEmptyList_WhenInvalidJson()
+    {
+        // Arrange
+        var handler = new TestHttpMessageHandler((request, cancellationToken) =>
+        {
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+        });
+
+        var httpClient = CreateTestHttpClient(handler);
+        var service = new GameService(httpClient);
+
+        // Act
+        var result = service.GetGeneratedRoomIds("invalid json");
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Empty(result);
+    }
+
+    /// Test: GetGameRewardsAsync retourne null en cas d'exception
+    [Fact]
+    public async Task GetGameRewardsAsync_ReturnsNull_WhenException()
+    {
+        // Arrange
+        var handler = new TestHttpMessageHandler((request, cancellationToken) =>
+        {
+            throw new HttpRequestException("Network error");
+        });
+
+        var httpClient = CreateTestHttpClient(handler);
+        var service = new GameService(httpClient);
+
+        // Act
+        var result = await service.GetGameRewardsAsync();
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    /// Test: GetLeaderboardAsync retourne la liste du classement
+    [Fact]
+    public async Task GetLeaderboardAsync_ReturnsLeaderboard_WhenSuccessful()
+    {
+        // Arrange
+        var expectedLeaderboard = new List<SharedModels.DTOs.LeaderboardEntry>
+        {
+            new SharedModels.DTOs.LeaderboardEntry
+            {
+                UserId = Guid.NewGuid(),
+                Username = "player1",
+                TotalScore = 500,
+                TotalSessions = 5,
+                LastSessionDate = DateTime.UtcNow
+            },
+            new SharedModels.DTOs.LeaderboardEntry
+            {
+                UserId = Guid.NewGuid(),
+                Username = "player2",
+                TotalScore = 300,
+                TotalSessions = 3,
+                LastSessionDate = DateTime.UtcNow
+            }
+        };
+
+        var handler = new TestHttpMessageHandler((request, cancellationToken) =>
+        {
+            Assert.Equal(HttpMethod.Get, request.Method);
+            Assert.Equal("/api/Leaderboard", request.RequestUri?.PathAndQuery);
+
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = JsonContent.Create(expectedLeaderboard)
+            });
+        });
+
+        var httpClient = CreateTestHttpClient(handler);
+        var service = new GameService(httpClient);
+
+        // Act
+        var result = await service.GetLeaderboardAsync();
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(2, result.Count);
+        Assert.Equal("player1", result[0].Username);
+        Assert.Equal(500, result[0].TotalScore);
+    }
+
+    /// Test: GetLeaderboardAsync retourne null en cas d'exception
+    [Fact]
+    public async Task GetLeaderboardAsync_ReturnsNull_WhenException()
+    {
+        // Arrange
+        var handler = new TestHttpMessageHandler((request, cancellationToken) =>
+        {
+            throw new HttpRequestException("Network error");
+        });
+
+        var httpClient = CreateTestHttpClient(handler);
+        var service = new GameService(httpClient);
+
+        // Act
+        var result = await service.GetLeaderboardAsync();
+
+        // Assert
+        Assert.Null(result);
+    }
 }
 

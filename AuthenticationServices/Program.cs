@@ -19,3 +19,9 @@ app.MapControllers();
 
 // Lancement de l'application
 app.Run();
+
+// Rendre Program accessible pour les tests
+namespace AuthenticationServices
+{
+    public partial class Program { }
+}

@@ -113,3 +113,9 @@ app.MapControllers();
 
 // Lancement de l'application
 app.Run();
+
+// Rendre Program accessible pour les tests
+namespace BlazorGame.Core
+{
+    public partial class Program { }
+}
