@@ -101,7 +101,7 @@ Notre frontend est organisé en trois dossiers principaux :
 
 ## Stratégie de tests
 
-Les tests sont implémentés avec xUnit, Moq et une base de données InMemory. Le projet de tests atteint 92% de couverture de code (hors composants et pages Blazor).
+Les tests sont implémentés avec xUnit, Moq et une base de données InMemory. Le projet de tests atteint **93%** de couverture de code (hors composants et pages Blazor).
 Les tests sont organisés en plusieurs catégories :
 
 **Tests Core (BlazorGame.Core)** :

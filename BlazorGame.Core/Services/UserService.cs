@@ -29,7 +29,8 @@ public class UserService
             {
                 Id = userId,
                 Username = username,
-                Role = role
+                Role = role,
+                LastConnectionDate = DateTime.UtcNow
             };
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
@@ -51,6 +52,10 @@ public class UserService
                 user.Role = role;
                 needsUpdate = true;
             }
+
+            // Mettre à jour la date de dernière connexion
+            user.LastConnectionDate = DateTime.UtcNow;
+            needsUpdate = true;
 
             if (needsUpdate)
             {
@@ -115,10 +120,7 @@ public class UserService
             {
                 UserId = u.Id,
                 Username = u.Username,
-                LastConnectionDate = u.GameSessions
-                    .OrderByDescending(s => s.StartTime)
-                    .Select(s => (DateTime?)s.StartTime)
-                    .FirstOrDefault(),
+                LastConnectionDate = u.LastConnectionDate,
                 TotalGamesPlayed = u.GameSessions.Count(),
                 TotalScore = u.GameSessions
                     .Where(s => s.Status == SharedModels.Enums.GameStatus.Completed ||

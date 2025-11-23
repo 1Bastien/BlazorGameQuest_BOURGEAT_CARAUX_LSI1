@@ -31,6 +31,11 @@ public class User
     public bool IsActive { get; set; } = true;
 
     /// <summary>
+    /// Date et heure de la dernière connexion de l'utilisateur.
+    /// </summary>
+    public DateTime? LastConnectionDate { get; set; }
+
+    /// <summary>
     /// Liste des parties de jeu associées à l'utilisateur.
     /// </summary>
     public virtual ICollection<GameSession> GameSessions { get; set; } = new List<GameSession>();

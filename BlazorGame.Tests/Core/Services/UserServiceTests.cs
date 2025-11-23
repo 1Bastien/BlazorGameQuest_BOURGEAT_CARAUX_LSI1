@@ -34,8 +34,10 @@ public class UserServiceTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal(userId, result.Id);
+        Assert.NotNull(result.LastConnectionDate);
         var userInDb = await context.Users.FindAsync(userId);
         Assert.NotNull(userInDb);
+        Assert.NotNull(userInDb.LastConnectionDate);
     }
 
     /// Test: EnsureUserExistsAsync retourne l'utilisateur existant
@@ -46,7 +48,8 @@ public class UserServiceTests
         var context = CreateInMemoryContext();
         var service = new UserService(context);
         var userId = Guid.NewGuid();
-        var existingUser = new User { Id = userId };
+        var oldConnectionDate = DateTime.UtcNow.AddDays(-1);
+        var existingUser = new User { Id = userId, LastConnectionDate = oldConnectionDate };
         context.Users.Add(existingUser);
         await context.SaveChangesAsync();
 
@@ -57,6 +60,9 @@ public class UserServiceTests
         Assert.NotNull(result);
         Assert.Equal(userId, result.Id);
         Assert.Equal(1, await context.Users.CountAsync());
+        // Vérifier que LastConnectionDate a été mise à jour
+        Assert.NotNull(result.LastConnectionDate);
+        Assert.True(result.LastConnectionDate > oldConnectionDate);
     }
 
     /// Test: GetAllAsync retourne tous les utilisateurs avec leurs sessions
@@ -284,9 +290,9 @@ public class UserServiceTests
         var context = CreateInMemoryContext();
         var service = new UserService(context);
 
-        var user1 = new User { Id = Guid.NewGuid(), Username = "player1" };
-        var user2 = new User { Id = Guid.NewGuid(), Username = "player2" };
-        var user3 = new User { Id = Guid.NewGuid(), Username = "player3" };
+        var user1 = new User { Id = Guid.NewGuid(), Username = "player1", LastConnectionDate = DateTime.UtcNow.AddHours(-2) };
+        var user2 = new User { Id = Guid.NewGuid(), Username = "player2", LastConnectionDate = DateTime.UtcNow };
+        var user3 = new User { Id = Guid.NewGuid(), Username = "player3" }; // Pas de LastConnectionDate (jamais connecté)
         context.Users.AddRange(user1, user2, user3);
 
         var session1 = new GameSession
@@ -355,9 +361,9 @@ public class UserServiceTests
         var context = CreateInMemoryContext();
         var service = new UserService(context);
 
-        var userWithGames = new User { Id = Guid.NewGuid(), Username = "activePlayer" };
-        var userNoGames1 = new User { Id = Guid.NewGuid(), Username = "zzzInactive" };
-        var userNoGames2 = new User { Id = Guid.NewGuid(), Username = "aaaInactive" };
+        var userWithGames = new User { Id = Guid.NewGuid(), Username = "activePlayer", LastConnectionDate = DateTime.UtcNow };
+        var userNoGames1 = new User { Id = Guid.NewGuid(), Username = "zzzInactive" }; // Pas de LastConnectionDate
+        var userNoGames2 = new User { Id = Guid.NewGuid(), Username = "aaaInactive" }; // Pas de LastConnectionDate
         context.Users.AddRange(userWithGames, userNoGames1, userNoGames2);
 
         var session = new GameSession

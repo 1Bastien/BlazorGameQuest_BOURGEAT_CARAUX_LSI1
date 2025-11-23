@@ -41,21 +41,23 @@ public static class GameDbContextSeeder
         // Ces GUIDs doivent correspondre aux IDs Keycloak des utilisateurs
         var user1Id = Guid.Parse("22222222-2222-2222-2222-222222222222");
         var user2Id = Guid.Parse("22222222-2222-2222-2222-222222222223");
-        
+
         modelBuilder.Entity<User>().HasData(
             new User
             {
                 Id = user1Id,
                 Username = "user1",
                 Role = "joueur",
-                IsActive = true
+                IsActive = true,
+                LastConnectionDate = DateTime.UtcNow.AddDays(-5)
             },
             new User
             {
                 Id = user2Id,
                 Username = "user2",
                 Role = "joueur",
-                IsActive = true
+                IsActive = true,
+                LastConnectionDate = DateTime.UtcNow.AddDays(-4)
             }
         );
 
@@ -143,7 +145,7 @@ public static class GameDbContextSeeder
         // Partie 1 : Partie complétée avec succès
         var user1Session1Id = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb01");
         var user1Session1StartTime = DateTime.UtcNow.AddDays(-5);
-        
+
         modelBuilder.Entity<GameSession>().HasData(
             new GameSession
             {
@@ -157,7 +159,8 @@ public static class GameDbContextSeeder
                 CurrentRoomIndex = 5,
                 TotalRooms = 5,
                 Status = GameStatus.Completed,
-                GeneratedRoomsJson = "[\"33333333-3333-3333-3333-333333333333\",\"44444444-4444-4444-4444-444444444444\",\"55555555-5555-5555-5555-555555555555\",\"88888888-8888-8888-8888-888888888888\",\"66666666-6666-6666-6666-666666666666\"]"
+                GeneratedRoomsJson =
+                    "[\"33333333-3333-3333-3333-333333333333\",\"44444444-4444-4444-4444-444444444444\",\"55555555-5555-5555-5555-555555555555\",\"88888888-8888-8888-8888-888888888888\",\"66666666-6666-6666-6666-666666666666\"]"
             }
         );
 
@@ -223,7 +226,7 @@ public static class GameDbContextSeeder
         // Partie 2 : Partie abandonnée par user1
         var user1Session2Id = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb02");
         var user1Session2StartTime = DateTime.UtcNow.AddDays(-3);
-        
+
         modelBuilder.Entity<GameSession>().HasData(
             new GameSession
             {
@@ -237,7 +240,8 @@ public static class GameDbContextSeeder
                 CurrentRoomIndex = 2,
                 TotalRooms = 5,
                 Status = GameStatus.Abandoned,
-                GeneratedRoomsJson = "[\"77777777-7777-7777-7777-777777777777\",\"99999999-9999-9999-9999-999999999999\",\"55555555-5555-5555-5555-555555555555\",\"44444444-4444-4444-4444-444444444444\",\"66666666-6666-6666-6666-666666666666\"]"
+                GeneratedRoomsJson =
+                    "[\"77777777-7777-7777-7777-777777777777\",\"99999999-9999-9999-9999-999999999999\",\"55555555-5555-5555-5555-555555555555\",\"44444444-4444-4444-4444-444444444444\",\"66666666-6666-6666-6666-666666666666\"]"
             }
         );
 
@@ -271,7 +275,7 @@ public static class GameDbContextSeeder
         // Partie 1 : Partie échouée (mort)
         var user2Session1Id = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb03");
         var user2Session1StartTime = DateTime.UtcNow.AddDays(-4);
-        
+
         modelBuilder.Entity<GameSession>().HasData(
             new GameSession
             {
@@ -285,7 +289,8 @@ public static class GameDbContextSeeder
                 CurrentRoomIndex = 4,
                 TotalRooms = 5,
                 Status = GameStatus.Failed,
-                GeneratedRoomsJson = "[\"66666666-6666-6666-6666-666666666666\",\"88888888-8888-8888-8888-888888888888\",\"77777777-7777-7777-7777-777777777777\",\"33333333-3333-3333-3333-333333333333\",\"55555555-5555-5555-5555-555555555555\"]"
+                GeneratedRoomsJson =
+                    "[\"66666666-6666-6666-6666-666666666666\",\"88888888-8888-8888-8888-888888888888\",\"77777777-7777-7777-7777-777777777777\",\"33333333-3333-3333-3333-333333333333\",\"55555555-5555-5555-5555-555555555555\"]"
             }
         );
 
@@ -340,7 +345,7 @@ public static class GameDbContextSeeder
         // Partie 2 : Partie complétée avec succès par user2
         var user2Session2Id = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb04");
         var user2Session2StartTime = DateTime.UtcNow.AddDays(-2);
-        
+
         modelBuilder.Entity<GameSession>().HasData(
             new GameSession
             {
@@ -354,7 +359,8 @@ public static class GameDbContextSeeder
                 CurrentRoomIndex = 5,
                 TotalRooms = 5,
                 Status = GameStatus.Completed,
-                GeneratedRoomsJson = "[\"44444444-4444-4444-4444-444444444444\",\"33333333-3333-3333-3333-333333333333\",\"88888888-8888-8888-8888-888888888888\",\"55555555-5555-5555-5555-555555555555\",\"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa\"]"
+                GeneratedRoomsJson =
+                    "[\"44444444-4444-4444-4444-444444444444\",\"33333333-3333-3333-3333-333333333333\",\"88888888-8888-8888-8888-888888888888\",\"55555555-5555-5555-5555-555555555555\",\"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa\"]"
             }
         );
 
@@ -420,7 +426,7 @@ public static class GameDbContextSeeder
         // Partie 3 : Partie abandonnée par user2
         var user2Session3Id = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb05");
         var user2Session3StartTime = DateTime.UtcNow.AddDays(-1);
-        
+
         modelBuilder.Entity<GameSession>().HasData(
             new GameSession
             {
@@ -434,7 +440,8 @@ public static class GameDbContextSeeder
                 CurrentRoomIndex = 1,
                 TotalRooms = 5,
                 Status = GameStatus.Abandoned,
-                GeneratedRoomsJson = "[\"77777777-7777-7777-7777-777777777777\",\"44444444-4444-4444-4444-444444444444\",\"66666666-6666-6666-6666-666666666666\",\"99999999-9999-9999-9999-999999999999\",\"33333333-3333-3333-3333-333333333333\"]"
+                GeneratedRoomsJson =
+                    "[\"77777777-7777-7777-7777-777777777777\",\"44444444-4444-4444-4444-444444444444\",\"66666666-6666-6666-6666-666666666666\",\"99999999-9999-9999-9999-999999999999\",\"33333333-3333-3333-3333-333333333333\"]"
             }
         );
 
