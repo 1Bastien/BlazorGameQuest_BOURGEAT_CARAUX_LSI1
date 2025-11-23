@@ -15,6 +15,11 @@ public class User
     public Guid Id { get; set; }
 
     /// <summary>
+    /// Nom d'utilisateur provenant de Keycloak.
+    /// </summary>
+    public string? Username { get; set; }
+
+    /// <summary>
     /// Liste des parties de jeu associées à l'utilisateur.
     /// </summary>
     public virtual ICollection<GameSession> GameSessions { get; set; } = new List<GameSession>();
