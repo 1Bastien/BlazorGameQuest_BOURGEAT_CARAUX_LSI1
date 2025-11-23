@@ -50,24 +50,26 @@ services:
     build:
       context: .
       dockerfile: AuthenticationServices/Dockerfile
+    ports:
+      - "5001:80" # Port exposé pour accéder directement au service (Swagger)
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     depends_on:
       - keycloak
     networks:
       - internal-network
-    # Pas de port exposé publiquement, seulement accessible via la gateway
 
   # Service principal du jeu
   core-service:
     build:
       context: .
       dockerfile: BlazorGame.Core/Dockerfile
+    ports:
+      - "5002:80" # Port exposé pour accéder directement au service (Swagger)
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     networks:
       - internal-network
-    # Pas de port exposé publiquement, seulement accessible via la gateway
 
 networks:
   internal-network:

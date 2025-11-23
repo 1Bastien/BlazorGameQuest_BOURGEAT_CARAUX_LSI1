@@ -86,7 +86,57 @@ builder.Services.AddControllers()
 
 // Ajout des endpoints explorer (Swagger)
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "BlazorGame Core API",
+        Version = "v1",
+        Description = @"API principale du jeu BlazorGame. 
+        
+Pour tester avec authentification :
+1. Allez sur http://localhost:5001/swagger (Authentication Service)
+2. Utilisez POST /auth/login avec username='admin' et password='admin' (ou un autre utilisateur)
+3. Copiez le access_token retourné
+4. Cliquez sur 'Authorize' ci-dessus et entrez 'Bearer {votre_token}'
+5. Vous pouvez maintenant tester les routes protégées"
+    });
+
+    // Configuration de la sécurité Bearer Token
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Description = @"Authentification JWT.
+        
+**IMPORTANT:** Entrez UNIQUEMENT le token (sans 'Bearer').
+Le préfixe 'Bearer' sera ajouté automatiquement.
+
+**Étapes:**
+1. Allez sur http://localhost:5001 et utilisez POST /auth/login
+2. Copiez la valeur du champ 'access_token'
+3. Revenez ici, cliquez sur 'Authorize' et collez UNIQUEMENT le token
+4. Le header sera automatiquement: Authorization: Bearer {votre_token}",
+        Name = "Authorization",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
+
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 // Création de l'application    
 var app = builder.Build();
@@ -99,11 +149,12 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configuration du pipeline HTTP
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "BlazorGame Core API v1");
+    c.RoutePrefix = "swagger"; // Swagger UI à la racine
+});
 
 app.UseCors("AllowBlazor");
 
