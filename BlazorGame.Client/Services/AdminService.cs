@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using SharedModels.Entities;
+using SharedModels.DTOs;
 
 namespace BlazorGame.Client.Services;
 
@@ -74,6 +75,48 @@ public class AdminService
     {
         var response = await _httpClient.DeleteAsync($"/api/RoomTemplates/{id}");
         return response.IsSuccessStatusCode;
+    }
+
+    #endregion
+
+    #region Players
+
+    /// <summary>
+    /// Récupère tous les joueurs pour l'administration
+    /// </summary>
+    public async Task<List<PlayerAdminDto>?> GetAllPlayersAsync()
+    {
+        return await _httpClient.GetFromJsonAsync<List<PlayerAdminDto>>("/api/Users/admin");
+    }
+
+    /// <summary>
+    /// Récupère toutes les sessions d'un joueur spécifique
+    /// </summary>
+    public async Task<List<GameSession>?> GetPlayerSessionsAsync(Guid userId)
+    {
+        return await _httpClient.GetFromJsonAsync<List<GameSession>>($"/api/Users/{userId}/sessions");
+    }
+
+    /// <summary>
+    /// Supprime toutes les sessions d'un joueur (reset de l'historique)
+    /// </summary>
+    public async Task<bool> DeletePlayerSessionsAsync(Guid userId)
+    {
+        var response = await _httpClient.DeleteAsync($"/api/Users/{userId}/sessions");
+        return response.IsSuccessStatusCode;
+    }
+
+    /// <summary>
+    /// Active ou désactive un utilisateur
+    /// </summary>
+    public async Task<User?> ToggleUserActiveStatusAsync(Guid userId)
+    {
+        var response = await _httpClient.PatchAsync($"/api/Users/{userId}/toggle-active", null);
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadFromJsonAsync<User>();
+        }
+        return null;
     }
 
     #endregion

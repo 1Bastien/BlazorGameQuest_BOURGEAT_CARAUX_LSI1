@@ -20,6 +20,17 @@ public class User
     public string? Username { get; set; }
 
     /// <summary>
+    /// Rôle de l'utilisateur provenant de Keycloak (joueur ou administrateur).
+    /// </summary>
+    public string? Role { get; set; }
+
+    /// <summary>
+    /// Indique si le compte utilisateur est actif.
+    /// Un compte désactivé ne peut pas se connecter.
+    /// </summary>
+    public bool IsActive { get; set; } = true;
+
+    /// <summary>
     /// Liste des parties de jeu associées à l'utilisateur.
     /// </summary>
     public virtual ICollection<GameSession> GameSessions { get; set; } = new List<GameSession>();

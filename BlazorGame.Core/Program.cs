@@ -1,5 +1,6 @@
 using BlazorGame.Core.Data;
 using BlazorGame.Core.Services;
+using BlazorGame.Core.Middleware;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -109,6 +110,10 @@ app.UseCors("AllowBlazor");
 app.UseAuthentication();
 app.UseAuthorization();
 
+// Middleware de synchronisation automatique des utilisateurs
+// Doit être après UseAuthentication pour avoir accès aux claims JWT
+app.UseUserSync();
+
 app.MapControllers();
 
 // Lancement de l'application
@@ -117,5 +122,7 @@ app.Run();
 // Rendre Program accessible pour les tests
 namespace BlazorGame.Core
 {
-    public partial class Program { }
+    public partial class Program
+    {
+    }
 }

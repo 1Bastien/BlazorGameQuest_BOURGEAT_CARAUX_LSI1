@@ -1,0 +1,455 @@
+@using SharedModels.DTOs
+@using SharedModels.Entities
+@using SharedModels.Enums
+@using BlazorGame.Client.Services
+@using Microsoft.JSInterop
+@inject AdminService AdminService
+@inject IJSRuntime JSRuntime
+
+@* Composant pour la gestion des joueurs *@
+
+<div class="card p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-medieval text-medieval-accent">Gestion des joueurs</h2>
+        <button class="btn-export" @onclick="ExportPlayers" disabled="@(_isLoading || _players == null || _players.Count == 0)">
+            <span>Exporter les joueurs (CSV)</span>
+        </button>
+    </div>
+    
+    @if (_isLoading)
+    {
+        <div class="text-center text-medieval-light">
+            <p>Chargement...</p>
+        </div>
+    }
+    else if (_players != null && _players.Count > 0)
+    {
+        <div class="space-y-4">
+            @foreach (var player in _players)
+            {
+                <div class="player-item @(player.IsActive ? "" : "player-disabled")">
+                    <div class="player-header" @onclick="() => TogglePlayerDetails(player.UserId)">
+                        <div class="grid grid-cols-6 gap-4 items-center">
+                            <div>
+                                <span class="text-sm text-medieval-light">Nom d'utilisateur</span>
+                                <p class="text-lg font-medieval text-medieval-accent">
+                                    @(player.Username ?? "Inconnu")
+                                    @if (!player.IsActive)
+                                    {
+                                        <span class="status-badge status-disabled">Désactivé</span>
+                                    }
+                                </p>
+                            </div>
+                            <div>
+                                <span class="text-sm text-medieval-light">Dernière connexion</span>
+                                <p class="text-lg font-medieval">
+                                    @if (player.LastConnectionDate.HasValue)
+                                    {
+                                        @player.LastConnectionDate.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-medieval-light opacity-50">Jamais</span>
+                                    }
+                                </p>
+                            </div>
+                            <div>
+                                <span class="text-sm text-medieval-light">Parties jouées</span>
+                                <p class="text-lg font-medieval font-bold">@player.TotalGamesPlayed</p>
+                            </div>
+                            <div>
+                                <span class="text-sm text-medieval-light">Score total</span>
+                                <p class="text-lg font-medieval font-bold text-medieval-accent">@player.TotalScore</p>
+                            </div>
+                            <div>
+                                @if (player.Role == "administrateur")
+                                {
+                                    <span class="text-medieval-light text-sm italic">Administrateur</span>
+                                }
+                                else
+                                {
+                                    <div class="flex gap-2" @onclick:stopPropagation="true">
+                                        <button class="btn-toggle-status" 
+                                                @onclick="() => HandleToggleStatus(player.UserId, player.Username, player.IsActive)"
+                                                disabled="@_isTogglingStatus">
+                                            @if (player.IsActive)
+                                            {
+                                                <span>Désactiver</span>
+                                            }
+                                            else
+                                            {
+                                                <span>Activer</span>
+                                            }
+                                        </button>
+                                        <button class="btn-reset" 
+                                                @onclick="() => HandleResetHistory(player.UserId, player.Username)" 
+                                                disabled="@_isResetting">
+                                            @if (_isResetting)
+                                            {
+                                                <span>...</span>
+                                            }
+                                            else
+                                            {
+                                                <span>Réinitialiser l'historique</span>
+                                            }
+                                        </button>
+                                    </div>
+                                }
+                            </div>
+                            <div class="text-right">
+                                <button class="btn-expand">
+                                    @if (_expandedPlayerId == player.UserId)
+                                    {
+                                        <span>▲</span>
+                                    }
+                                    else
+                                    {
+                                        <span>▼</span>
+                                    }
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (_expandedPlayerId == player.UserId)
+                    {
+                        <div class="player-details">
+                            @if (_loadingSessions)
+                            {
+                                <div class="text-center text-medieval-light py-4">
+                                    <p>Chargement des parties...</p>
+                                </div>
+                            }
+                            else if (_playerSessions != null && _playerSessions.Count > 0)
+                            {
+                                <h3 class="text-xl font-medieval text-medieval-accent mb-4">Historique des parties</h3>
+                                <div class="space-y-3">
+                                    @foreach (var session in _playerSessions)
+                                    {
+                                        <div class="session-item @GetStatusClass(session.Status)">
+                                            <div class="flex justify-between items-center mb-2">
+                                                <div>
+                                                    <span class="font-medieval text-lg text-medieval-accent">@GetStatusText(session.Status)</span>
+                                                    @if (session.Status == GameStatus.Abandoned)
+                                                    {
+                                                        <span class="text-xs text-yellow-500 ml-2">(non comptabilisé)</span>
+                                                    }
+                                                </div>
+                                                <span class="text-sm text-medieval-light">@session.StartTime.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</span>
+                                            </div>
+                                            <div class="grid grid-cols-4 gap-4 text-center">
+                                                <div>
+                                                    <span class="text-sm text-medieval-light">Score</span>
+                                                    <p class="text-xl font-bold font-medieval @(session.Status == GameStatus.Abandoned ? "opacity-50" : "")">@session.Score</p>
+                                                </div>
+                                                <div>
+                                                    <span class="text-sm text-medieval-light">PV finaux</span>
+                                                    <p class="text-xl font-bold font-medieval @GetHealthColorClass(session.CurrentHealth)">@session.CurrentHealth</p>
+                                                </div>
+                                                <div>
+                                                    <span class="text-sm text-medieval-light">Salles</span>
+                                                    <p class="text-xl font-bold font-medieval">@session.CurrentRoomIndex/@session.TotalRooms</p>
+                                                </div>
+                                                <div>
+                                                    <span class="text-sm text-medieval-light">Durée</span>
+                                                    <p class="text-xl font-bold font-medieval">@GetDuration(session)</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="text-center text-medieval-light italic py-4">
+                                    Aucune partie trouvée pour ce joueur
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center text-medieval-light italic">
+            Aucun joueur trouvé
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <div class="error-message mt-4">
+            <p>@_errorMessage</p>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(_successMessage))
+    {
+        <div class="success-message mt-4">
+            <p>@_successMessage</p>
+        </div>
+    }
+</div>
+
+@code {
+    private List<PlayerAdminDto>? _players;
+    private List<GameSession>? _playerSessions;
+    private bool _isLoading = true;
+    private bool _loadingSessions = false;
+    private bool _isResetting = false;
+    private bool _isTogglingStatus = false;
+    private string _errorMessage = string.Empty;
+    private string _successMessage = string.Empty;
+    private Guid? _expandedPlayerId = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPlayers();
+    }
+
+    private async Task LoadPlayers()
+    {
+        try
+        {
+            _isLoading = true;
+            _errorMessage = string.Empty;
+            _players = await AdminService.GetAllPlayersAsync();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Erreur lors du chargement des joueurs : {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task TogglePlayerDetails(Guid playerId)
+    {
+        if (_expandedPlayerId == playerId)
+        {
+            _expandedPlayerId = null;
+            _playerSessions = null;
+        }
+        else
+        {
+            _expandedPlayerId = playerId;
+            await LoadPlayerSessions(playerId);
+        }
+    }
+
+    private async Task LoadPlayerSessions(Guid playerId)
+    {
+        try
+        {
+            _loadingSessions = true;
+            _errorMessage = string.Empty;
+            _playerSessions = await AdminService.GetPlayerSessionsAsync(playerId);
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Erreur lors du chargement des parties : {ex.Message}";
+        }
+        finally
+        {
+            _loadingSessions = false;
+        }
+    }
+
+    private async Task HandleResetHistory(Guid playerId, string? username)
+    {
+        // Demander confirmation
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", 
+            $"Êtes-vous sûr de vouloir supprimer tout l'historique de {username ?? "ce joueur"} ? Cette action est irréversible.");
+        
+        if (!confirmed)
+            return;
+
+        try
+        {
+            _isResetting = true;
+            _errorMessage = string.Empty;
+            _successMessage = string.Empty;
+
+            var result = await AdminService.DeletePlayerSessionsAsync(playerId);
+            
+            if (result)
+            {
+                _successMessage = "Historique réinitialisé avec succès !";
+                
+                // Recharger les données
+                await LoadPlayers();
+                await LoadPlayerSessions(playerId);
+                
+                // Effacer le message de succès après 3 secondes
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(3000);
+                    _successMessage = string.Empty;
+                    await InvokeAsync(StateHasChanged);
+                });
+            }
+            else
+            {
+                _errorMessage = "Impossible de réinitialiser l'historique.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Erreur lors de la réinitialisation : {ex.Message}";
+        }
+        finally
+        {
+            _isResetting = false;
+        }
+    }
+
+    private async Task HandleToggleStatus(Guid playerId, string? username, bool currentStatus)
+    {
+        var action = currentStatus ? "désactiver" : "activer";
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirm", 
+            $"Êtes-vous sûr de vouloir {action} le compte de {username ?? "ce joueur"} ?");
+        
+        if (!confirmed)
+            return;
+
+        try
+        {
+            _isTogglingStatus = true;
+            _errorMessage = string.Empty;
+            _successMessage = string.Empty;
+
+            var result = await AdminService.ToggleUserActiveStatusAsync(playerId);
+            
+            if (result != null)
+            {
+                var statusText = result.IsActive ? "activé" : "désactivé";
+                _successMessage = $"Compte {statusText} avec succès !";
+                
+                // Recharger les données
+                await LoadPlayers();
+                
+                // Effacer le message de succès après 3 secondes
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(3000);
+                    _successMessage = string.Empty;
+                    await InvokeAsync(StateHasChanged);
+                });
+            }
+            else
+            {
+                _errorMessage = "Impossible de modifier le statut du compte.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Erreur lors de la modification du statut : {ex.Message}";
+        }
+        finally
+        {
+            _isTogglingStatus = false;
+        }
+    }
+
+    private string GetStatusText(GameStatus status)
+    {
+        return status switch
+        {
+            GameStatus.Completed => "Victoire",
+            GameStatus.Failed => "Défaite",
+            GameStatus.Abandoned => "Abandonné",
+            GameStatus.InProgress => "En cours",
+            _ => "Inconnu"
+        };
+    }
+
+    private string GetStatusClass(GameStatus status)
+    {
+        return status switch
+        {
+            GameStatus.Completed => "status-victory",
+            GameStatus.Failed => "status-defeat",
+            GameStatus.Abandoned => "status-abandoned",
+            GameStatus.InProgress => "status-progress",
+            _ => ""
+        };
+    }
+
+    private string GetHealthColorClass(int health)
+    {
+        return health switch
+        {
+            <= 30 => "text-red-500",
+            <= 60 => "text-yellow-500",
+            _ => "text-green-500"
+        };
+    }
+
+    private string GetDuration(GameSession session)
+    {
+        if (!session.EndTime.HasValue)
+            return "-";
+            
+        var duration = session.EndTime.Value - session.StartTime;
+        
+        if (duration.TotalMinutes < 1)
+            return $"{(int)duration.TotalSeconds}s";
+        if (duration.TotalHours < 1)
+            return $"{(int)duration.TotalMinutes}min";
+            
+        return $"{(int)duration.TotalHours}h{duration.Minutes}min";
+    }
+
+    private async Task ExportPlayers()
+    {
+        if (_players == null || _players.Count == 0)
+            return;
+
+        try
+        {
+            // Créer le contenu CSV
+            var csv = new System.Text.StringBuilder();
+            
+            // En-têtes
+            csv.AppendLine("Nom d'utilisateur,Dernière connexion,Parties jouées,Score total,Statut,Rôle");
+            
+            // Données
+            foreach (var player in _players)
+            {
+                var lastConnection = player.LastConnectionDate.HasValue 
+                    ? player.LastConnectionDate.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                    : "Jamais";
+                var status = player.IsActive ? "Actif" : "Désactivé";
+                var role = player.Role ?? "joueur";
+                
+                csv.AppendLine($"\"{player.Username}\",\"{lastConnection}\",{player.TotalGamesPlayed},{player.TotalScore},\"{status}\",\"{role}\"");
+            }
+
+            // Télécharger le fichier
+            var fileName = $"joueurs_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+            var bytes = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
+            var base64 = Convert.ToBase64String(bytes);
+            
+            await JSRuntime.InvokeVoidAsync("downloadFile", fileName, base64);
+            
+            _successMessage = "Export réussi !";
+            
+            // Effacer le message après 3 secondes
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(3000);
+                _successMessage = string.Empty;
+                await InvokeAsync(StateHasChanged);
+            });
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Erreur lors de l'export : {ex.Message}";
+        }
+    }
+}
+

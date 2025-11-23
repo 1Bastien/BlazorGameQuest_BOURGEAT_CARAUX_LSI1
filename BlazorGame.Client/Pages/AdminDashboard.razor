@@ -44,23 +44,7 @@
             }
             else if (_activeTab == "players")
             {
-                <div class="card p-8 text-center">
-                    <h2 class="text-2xl mb-4 font-medieval text-medieval-accent">Gestion des joueurs</h2>
-                    <div class="flex flex-wrap gap-4 justify-center opacity-50">
-                        <button class="btn-primary text-sm" disabled>
-                            Voir tous les joueurs
-                        </button>
-                        <button class="btn-secondary bg-yellow-700 hover:bg-yellow-600 text-sm" disabled>
-                            Bannir un joueur
-                        </button>
-                        <button class="btn-secondary bg-green-700 hover:bg-green-600 text-sm" disabled>
-                            Débannir un joueur
-                        </button>
-                        <button class="btn-secondary bg-red-700 hover:bg-red-600 text-sm" disabled>
-                            Exporter la liste des joueurs
-                        </button>
-                    </div>
-                </div>
+                <PlayerManager />
             }
         </div>
     </div>

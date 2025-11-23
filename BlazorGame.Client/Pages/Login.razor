@@ -76,11 +76,15 @@
 
         try
         {
-            var success = await AuthService.LoginAsync(_username, _password);
+            var result = await AuthService.LoginAsync(_username, _password);
             
-            if (success)
+            if (result.Success)
             {
                 Navigation.NavigateTo("/", true);
+            }
+            else if (result.IsAccountDisabled)
+            {
+                _errorMessage = "Votre compte a été désactivé. Veuillez contacter l'administrateur.";
             }
             else
             {

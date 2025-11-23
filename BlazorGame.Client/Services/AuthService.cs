@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using Blazored.LocalStorage;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using SharedModels.DTOs;
 
 namespace BlazorGame.Client.Services;
 
@@ -13,17 +14,19 @@ public class AuthService
 {
     private readonly HttpClient _httpClient;
     private readonly ILocalStorageService _localStorage;
+    private readonly GameService _gameService;
 
-    public AuthService(HttpClient httpClient, ILocalStorageService localStorage)
+    public AuthService(HttpClient httpClient, ILocalStorageService localStorage, GameService gameService)
     {
         _httpClient = httpClient;
         _localStorage = localStorage;
+        _gameService = gameService;
     }
 
     /// <summary>
     /// Connecte un utilisateur et stocke les tokens dans le LocalStorage
     /// </summary>
-    public async Task<bool> LoginAsync(string username, string password)
+    public async Task<LoginResult> LoginAsync(string username, string password)
     {
         var request = new { Username = username, Password = password };
         var response = await _httpClient.PostAsJsonAsync("/api/auth/login", request);
@@ -36,11 +39,30 @@ public class AuthService
                 await _localStorage.SetItemAsStringAsync("access_token", tokenResponse.access_token);
                 await _localStorage.SetItemAsStringAsync("refresh_token", tokenResponse.refresh_token);
                 SetAuthorizationHeader(tokenResponse.access_token);
-                return true;
+
+                // Vérifier si le compte est actif
+                // L'utilisateur sera automatiquement synchronisé côté serveur par le middleware
+                try
+                {
+                    var statusResponse = await _httpClient.GetFromJsonAsync<UserStatusDto>("/api/Users/me/status");
+                    if (statusResponse != null && !statusResponse.IsActive)
+                    {
+                        // Compte désactivé - déconnecter immédiatement
+                        await LogoutAsync();
+                        return new LoginResult { Success = false, IsAccountDisabled = true };
+                    }
+                }
+                catch
+                {
+                    // Si l'appel échoue, on considère que le compte est actif (première connexion)
+                    // Le middleware créera l'utilisateur à la prochaine requête authentifiée
+                }
+
+                return new LoginResult { Success = true, IsAccountDisabled = false };
             }
         }
 
-        return false;
+        return new LoginResult { Success = false, IsAccountDisabled = false };
     }
 
     /// <summary>
@@ -195,5 +217,11 @@ public class TokenResponse
     public int expires_in { get; set; }
     public int refresh_expires_in { get; set; }
     public string token_type { get; set; } = string.Empty;
+}
+
+public class LoginResult
+{
+    public bool Success { get; set; }
+    public bool IsAccountDisabled { get; set; }
 }
 
