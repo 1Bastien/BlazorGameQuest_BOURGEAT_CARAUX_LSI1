@@ -6,7 +6,12 @@ namespace BlazorGame.Gateway.Middleware;
 public class AuthenticationMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly string[] _publicPaths = { "/", "/index.html", "/css", "/js", "/media", "/favicon", "/icon", "/api/auth" };
+
+    private readonly string[] _publicPaths =
+    {
+        "/", "/index.html", "/css", "/js", "/media", "/favicon", "/icon", "/api/auth/login", "/api/auth/logout",
+        "/api/auth/refresh", "/api/auth/users", "/api/leaderboard"
+    };
 
     public AuthenticationMiddleware(RequestDelegate next)
     {
@@ -26,7 +31,7 @@ public class AuthenticationMiddleware
         if (!isPublicPath && path.StartsWith("/api"))
         {
             var authHeader = context.Request.Headers["Authorization"].ToString();
-            
+
             if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
             {
                 context.Response.StatusCode = 401;

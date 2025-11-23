@@ -9,7 +9,7 @@ namespace AuthenticationServices.Controllers;
 /// Controller pour gérer l'authentification via Keycloak
 /// </summary>
 [ApiController]
-[Route("[controller]")]
+[Route("auth")]
 public class AuthController : ControllerBase
 {
     private readonly IConfiguration _configuration;
@@ -132,6 +132,97 @@ public class AuthController : ControllerBase
 
         var userInfo = await response.Content.ReadAsStringAsync();
         return Ok(JsonSerializer.Deserialize<JsonElement>(userInfo));
+    }
+
+    /// <summary>
+    /// Récupère les informations d'un utilisateur par son ID depuis Keycloak (sans authentification)
+    /// </summary>
+    [HttpGet("users/{userId}")]
+    public async Task<ActionResult> GetUserById(Guid userId)
+    {
+        var authority = _configuration["Keycloak:Authority"];
+
+        if (string.IsNullOrEmpty(authority))
+        {
+            return StatusCode(500, new { message = "Keycloak configuration missing" });
+        }
+
+        var adminToken = await GetAdminTokenAsync();
+
+        if (string.IsNullOrEmpty(adminToken))
+        {
+            return StatusCode(500, new { message = "Failed to get admin token" });
+        }
+
+        var userEndpoint = $"{authority.Replace("/realms/blazorgame", "")}/admin/realms/blazorgame/users/{userId}";
+
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", adminToken);
+        var response = await _httpClient.GetAsync(userEndpoint);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return NotFound(new { message = "User not found" });
+        }
+
+        var userInfo = await response.Content.ReadAsStringAsync();
+        var userJson = JsonSerializer.Deserialize<JsonElement>(userInfo);
+
+        var username = userJson.TryGetProperty("username", out var usernameProp)
+            ? usernameProp.GetString()
+            : null;
+
+        var isAdmin = false;
+        if (userJson.TryGetProperty("realmRoles", out var roles))
+        {
+            foreach (var role in roles.EnumerateArray())
+            {
+                if (role.GetString() == "administrateur")
+                {
+                    isAdmin = true;
+                    break;
+                }
+            }
+        }
+
+        return Ok(new { username, isAdmin });
+    }
+
+    /// <summary>
+    /// Obtient un token admin pour accéder à l'API Keycloak
+    /// </summary>
+    private async Task<string?> GetAdminTokenAsync()
+    {
+        var authority = _configuration["Keycloak:Authority"];
+        var clientId = _configuration["Keycloak:ClientId"];
+        var adminUsername = _configuration["Keycloak:AdminUsername"];
+        var adminPassword = _configuration["Keycloak:AdminPassword"];
+
+        if (string.IsNullOrEmpty(adminUsername) || string.IsNullOrEmpty(adminPassword))
+        {
+            return null;
+        }
+
+        var tokenEndpoint = $"{authority}/protocol/openid-connect/token";
+
+        var content = new FormUrlEncodedContent(new[]
+        {
+            new KeyValuePair<string, string>("grant_type", "password"),
+            new KeyValuePair<string, string>("client_id", clientId!),
+            new KeyValuePair<string, string>("username", adminUsername),
+            new KeyValuePair<string, string>("password", adminPassword)
+        });
+
+        var response = await _httpClient.PostAsync(tokenEndpoint, content);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        var responseContent = await response.Content.ReadAsStringAsync();
+        var tokenResponse = JsonSerializer.Deserialize<TokenResponse>(responseContent);
+
+        return tokenResponse?.access_token;
     }
 }
 
