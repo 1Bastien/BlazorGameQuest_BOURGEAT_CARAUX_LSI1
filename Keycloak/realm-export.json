@@ -22,6 +22,7 @@
   },
   "users": [
     {
+      "id": "22222222-2222-2222-2222-222222222222",
       "username": "user1",
       "enabled": true,
       "emailVerified": true,
@@ -39,6 +40,7 @@
       }
     },
     {
+      "id": "22222222-2222-2222-2222-222222222223",
       "username": "user2",
       "enabled": true,
       "emailVerified": true,
@@ -56,6 +58,7 @@
       }
     },
     {
+      "id": "22222222-2222-2222-2222-222222222224",
       "username": "admin",
       "enabled": true,
       "emailVerified": true,

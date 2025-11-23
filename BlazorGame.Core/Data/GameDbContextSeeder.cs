@@ -37,8 +37,27 @@ public static class GameDbContextSeeder
             }
         );
 
-        // Les utilisateurs seront créés automatiquement via Keycloak
-        // lors de leur première connexion/partie
+        // Création des utilisateurs de test correspondant aux comptes Keycloak
+        // Ces GUIDs doivent correspondre aux IDs Keycloak des utilisateurs
+        var user1Id = Guid.Parse("22222222-2222-2222-2222-222222222222");
+        var user2Id = Guid.Parse("22222222-2222-2222-2222-222222222223");
+        
+        modelBuilder.Entity<User>().HasData(
+            new User
+            {
+                Id = user1Id,
+                Username = "user1",
+                Role = "joueur",
+                IsActive = true
+            },
+            new User
+            {
+                Id = user2Id,
+                Username = "user2",
+                Role = "joueur",
+                IsActive = true
+            }
+        );
 
         // Salles de Combat
         modelBuilder.Entity<RoomTemplate>().HasData(
@@ -117,6 +136,320 @@ public static class GameDbContextSeeder
                     "Des pièces d'or et des bijoux scintillent dans la pénombre. Mais attention, les trésors les plus brillants cachent souvent les pièges les plus mortels...",
                 Type = RoomType.Search,
                 IsActive = true
+            }
+        );
+
+        // Parties de démonstration pour user1
+        // Partie 1 : Partie complétée avec succès
+        var user1Session1Id = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb01");
+        var user1Session1StartTime = DateTime.UtcNow.AddDays(-5);
+        
+        modelBuilder.Entity<GameSession>().HasData(
+            new GameSession
+            {
+                Id = user1Session1Id,
+                PlayerId = user1Id,
+                StartTime = user1Session1StartTime,
+                EndTime = user1Session1StartTime.AddMinutes(25),
+                LastSaveTime = user1Session1StartTime.AddMinutes(25),
+                Score = 420,
+                CurrentHealth = 75,
+                CurrentRoomIndex = 5,
+                TotalRooms = 5,
+                Status = GameStatus.Completed,
+                GeneratedRoomsJson = "[\"33333333-3333-3333-3333-333333333333\",\"44444444-4444-4444-4444-444444444444\",\"55555555-5555-5555-5555-555555555555\",\"88888888-8888-8888-8888-888888888888\",\"66666666-6666-6666-6666-666666666666\"]"
+            }
+        );
+
+        // Actions pour la partie complétée de user1
+        modelBuilder.Entity<GameAction>().HasData(
+            new GameAction
+            {
+                Id = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccc01"),
+                GameSessionId = user1Session1Id,
+                Timestamp = user1Session1StartTime.AddMinutes(3),
+                Type = ActionType.Combat,
+                Result = GameActionResult.Victory,
+                PointsChange = 100,
+                HealthChange = 0,
+                RoomNumber = 1
+            },
+            new GameAction
+            {
+                Id = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccc02"),
+                GameSessionId = user1Session1Id,
+                Timestamp = user1Session1StartTime.AddMinutes(8),
+                Type = ActionType.Search,
+                Result = GameActionResult.FoundTreasure,
+                PointsChange = 75,
+                HealthChange = 0,
+                RoomNumber = 2
+            },
+            new GameAction
+            {
+                Id = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccc03"),
+                GameSessionId = user1Session1Id,
+                Timestamp = user1Session1StartTime.AddMinutes(14),
+                Type = ActionType.Combat,
+                Result = GameActionResult.Defeat,
+                PointsChange = -50,
+                HealthChange = -25,
+                RoomNumber = 3
+            },
+            new GameAction
+            {
+                Id = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccc04"),
+                GameSessionId = user1Session1Id,
+                Timestamp = user1Session1StartTime.AddMinutes(19),
+                Type = ActionType.Search,
+                Result = GameActionResult.FoundPotion,
+                PointsChange = 0,
+                HealthChange = 40,
+                RoomNumber = 4
+            },
+            new GameAction
+            {
+                Id = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccc05"),
+                GameSessionId = user1Session1Id,
+                Timestamp = user1Session1StartTime.AddMinutes(25),
+                Type = ActionType.Combat,
+                Result = GameActionResult.Victory,
+                PointsChange = 95,
+                HealthChange = 0,
+                RoomNumber = 5
+            }
+        );
+
+        // Partie 2 : Partie abandonnée par user1
+        var user1Session2Id = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb02");
+        var user1Session2StartTime = DateTime.UtcNow.AddDays(-3);
+        
+        modelBuilder.Entity<GameSession>().HasData(
+            new GameSession
+            {
+                Id = user1Session2Id,
+                PlayerId = user1Id,
+                StartTime = user1Session2StartTime,
+                EndTime = user1Session2StartTime.AddMinutes(10),
+                LastSaveTime = user1Session2StartTime.AddMinutes(10),
+                Score = 45,
+                CurrentHealth = 60,
+                CurrentRoomIndex = 2,
+                TotalRooms = 5,
+                Status = GameStatus.Abandoned,
+                GeneratedRoomsJson = "[\"77777777-7777-7777-7777-777777777777\",\"99999999-9999-9999-9999-999999999999\",\"55555555-5555-5555-5555-555555555555\",\"44444444-4444-4444-4444-444444444444\",\"66666666-6666-6666-6666-666666666666\"]"
+            }
+        );
+
+        // Actions pour la partie abandonnée de user1
+        modelBuilder.Entity<GameAction>().HasData(
+            new GameAction
+            {
+                Id = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccc06"),
+                GameSessionId = user1Session2Id,
+                Timestamp = user1Session2StartTime.AddMinutes(5),
+                Type = ActionType.Combat,
+                Result = GameActionResult.Defeat,
+                PointsChange = -45,
+                HealthChange = -30,
+                RoomNumber = 1
+            },
+            new GameAction
+            {
+                Id = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccc07"),
+                GameSessionId = user1Session2Id,
+                Timestamp = user1Session2StartTime.AddMinutes(10),
+                Type = ActionType.Search,
+                Result = GameActionResult.FoundTreasure,
+                PointsChange = 70,
+                HealthChange = 0,
+                RoomNumber = 2
+            }
+        );
+
+        // Parties de démonstration pour user2
+        // Partie 1 : Partie échouée (mort)
+        var user2Session1Id = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb03");
+        var user2Session1StartTime = DateTime.UtcNow.AddDays(-4);
+        
+        modelBuilder.Entity<GameSession>().HasData(
+            new GameSession
+            {
+                Id = user2Session1Id,
+                PlayerId = user2Id,
+                StartTime = user2Session1StartTime,
+                EndTime = user2Session1StartTime.AddMinutes(18),
+                LastSaveTime = user2Session1StartTime.AddMinutes(18),
+                Score = 150,
+                CurrentHealth = 0,
+                CurrentRoomIndex = 4,
+                TotalRooms = 5,
+                Status = GameStatus.Failed,
+                GeneratedRoomsJson = "[\"66666666-6666-6666-6666-666666666666\",\"88888888-8888-8888-8888-888888888888\",\"77777777-7777-7777-7777-777777777777\",\"33333333-3333-3333-3333-333333333333\",\"55555555-5555-5555-5555-555555555555\"]"
+            }
+        );
+
+        // Actions pour la partie échouée de user2
+        modelBuilder.Entity<GameAction>().HasData(
+            new GameAction
+            {
+                Id = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccc08"),
+                GameSessionId = user2Session1Id,
+                Timestamp = user2Session1StartTime.AddMinutes(4),
+                Type = ActionType.Combat,
+                Result = GameActionResult.Victory,
+                PointsChange = 110,
+                HealthChange = 0,
+                RoomNumber = 1
+            },
+            new GameAction
+            {
+                Id = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccc09"),
+                GameSessionId = user2Session1Id,
+                Timestamp = user2Session1StartTime.AddMinutes(9),
+                Type = ActionType.Search,
+                Result = GameActionResult.TriggeredTrap,
+                PointsChange = -25,
+                HealthChange = -20,
+                RoomNumber = 2
+            },
+            new GameAction
+            {
+                Id = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccc10"),
+                GameSessionId = user2Session1Id,
+                Timestamp = user2Session1StartTime.AddMinutes(13),
+                Type = ActionType.Combat,
+                Result = GameActionResult.Defeat,
+                PointsChange = -55,
+                HealthChange = -35,
+                RoomNumber = 3
+            },
+            new GameAction
+            {
+                Id = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccc11"),
+                GameSessionId = user2Session1Id,
+                Timestamp = user2Session1StartTime.AddMinutes(18),
+                Type = ActionType.Combat,
+                Result = GameActionResult.Defeat,
+                PointsChange = -60,
+                HealthChange = -45,
+                RoomNumber = 4
+            }
+        );
+
+        // Partie 2 : Partie complétée avec succès par user2
+        var user2Session2Id = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb04");
+        var user2Session2StartTime = DateTime.UtcNow.AddDays(-2);
+        
+        modelBuilder.Entity<GameSession>().HasData(
+            new GameSession
+            {
+                Id = user2Session2Id,
+                PlayerId = user2Id,
+                StartTime = user2Session2StartTime,
+                EndTime = user2Session2StartTime.AddMinutes(30),
+                LastSaveTime = user2Session2StartTime.AddMinutes(30),
+                Score = 510,
+                CurrentHealth = 90,
+                CurrentRoomIndex = 5,
+                TotalRooms = 5,
+                Status = GameStatus.Completed,
+                GeneratedRoomsJson = "[\"44444444-4444-4444-4444-444444444444\",\"33333333-3333-3333-3333-333333333333\",\"88888888-8888-8888-8888-888888888888\",\"55555555-5555-5555-5555-555555555555\",\"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa\"]"
+            }
+        );
+
+        // Actions pour la partie complétée de user2
+        modelBuilder.Entity<GameAction>().HasData(
+            new GameAction
+            {
+                Id = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccc12"),
+                GameSessionId = user2Session2Id,
+                Timestamp = user2Session2StartTime.AddMinutes(5),
+                Type = ActionType.Search,
+                Result = GameActionResult.FoundPotion,
+                PointsChange = 0,
+                HealthChange = 45,
+                RoomNumber = 1
+            },
+            new GameAction
+            {
+                Id = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccc13"),
+                GameSessionId = user2Session2Id,
+                Timestamp = user2Session2StartTime.AddMinutes(11),
+                Type = ActionType.Combat,
+                Result = GameActionResult.Victory,
+                PointsChange = 115,
+                HealthChange = 0,
+                RoomNumber = 2
+            },
+            new GameAction
+            {
+                Id = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccc14"),
+                GameSessionId = user2Session2Id,
+                Timestamp = user2Session2StartTime.AddMinutes(17),
+                Type = ActionType.Search,
+                Result = GameActionResult.FoundTreasure,
+                PointsChange = 85,
+                HealthChange = 0,
+                RoomNumber = 3
+            },
+            new GameAction
+            {
+                Id = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccc15"),
+                GameSessionId = user2Session2Id,
+                Timestamp = user2Session2StartTime.AddMinutes(23),
+                Type = ActionType.Combat,
+                Result = GameActionResult.Victory,
+                PointsChange = 105,
+                HealthChange = 0,
+                RoomNumber = 4
+            },
+            new GameAction
+            {
+                Id = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccc16"),
+                GameSessionId = user2Session2Id,
+                Timestamp = user2Session2StartTime.AddMinutes(30),
+                Type = ActionType.Search,
+                Result = GameActionResult.FoundTreasure,
+                PointsChange = 85,
+                HealthChange = 0,
+                RoomNumber = 5
+            }
+        );
+
+        // Partie 3 : Partie abandonnée par user2
+        var user2Session3Id = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbb05");
+        var user2Session3StartTime = DateTime.UtcNow.AddDays(-1);
+        
+        modelBuilder.Entity<GameSession>().HasData(
+            new GameSession
+            {
+                Id = user2Session3Id,
+                PlayerId = user2Id,
+                StartTime = user2Session3StartTime,
+                EndTime = user2Session3StartTime.AddMinutes(7),
+                LastSaveTime = user2Session3StartTime.AddMinutes(7),
+                Score = -15,
+                CurrentHealth = 85,
+                CurrentRoomIndex = 1,
+                TotalRooms = 5,
+                Status = GameStatus.Abandoned,
+                GeneratedRoomsJson = "[\"77777777-7777-7777-7777-777777777777\",\"44444444-4444-4444-4444-444444444444\",\"66666666-6666-6666-6666-666666666666\",\"99999999-9999-9999-9999-999999999999\",\"33333333-3333-3333-3333-333333333333\"]"
+            }
+        );
+
+        // Actions pour la partie abandonnée de user2
+        modelBuilder.Entity<GameAction>().HasData(
+            new GameAction
+            {
+                Id = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccc17"),
+                GameSessionId = user2Session3Id,
+                Timestamp = user2Session3StartTime.AddMinutes(7),
+                Type = ActionType.Flee,
+                Result = GameActionResult.Escaped,
+                PointsChange = -15,
+                HealthChange = 0,
+                RoomNumber = 1
             }
         );
     }
