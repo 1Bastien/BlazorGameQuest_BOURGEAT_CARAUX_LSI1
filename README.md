@@ -8,6 +8,8 @@ Bastien BOURGEAT - Ghislain CARAUX - LSI 1 APP 2 Promo 2027
 
 ## Installation et démarrage
 
+### Option 1 : Avec Docker (recommandé)
+
 ```bash
 # Lancer avec Docker
 docker-compose up --build
@@ -19,6 +21,37 @@ docker-compose down
 L'application sera disponible sur :
 
 - Gateway (Frontend + API) : http://localhost:5000
+- Swagger Core : http://localhost:5001/swagger
+
+### Option 2 : Lancement manuel des projets
+
+Vous pouvez également lancer chaque projet individuellement :
+
+```bash
+# Terminal 1 - BlazorGame.Core
+cd BlazorGame.Core
+dotnet build
+dotnet run
+
+# Terminal 2 - BlazorGame.Gateway
+cd BlazorGame.Gateway
+dotnet build
+dotnet run
+
+# Terminal 3 - BlazorGame.Client
+cd BlazorGame.Client
+dotnet build
+dotnet run
+```
+
+**Utilisez le front exposé par la Gateway sinon ca ne fonctionnera pas, elle sert de reverse proxy.**
+
+L'application sera disponible sur :
+
+- Gateway (Frontend + API): http://localhost:5000 (Pas de swagger ici car pas de controller simplement des redirecitons)
+
+- Core Service : http://localhost:5001
+- Swagger Core : http://localhost:5001/swagger
 
 ## Description du projet
 
@@ -112,6 +145,9 @@ dotnet test --collect:"XPlat Code Coverage"
 
 # Générer le rapport HTML (exclut les fichiers UI Blazor)
 dotnet reportgenerator -reports:"BlazorGame.Tests/TestResults/*/coverage.cobertura.xml" -targetdir:"BlazorGame.Tests/TestResults/coverage-report" -reporttypes:Html -classfilters:"-BlazorGame.Client.Components.*;-BlazorGame.Client.Pages.*;-BlazorGame.Client.Layout.*"
+
+# Ouvrir dans le rapport de test navigateur
+open BlazorGame.Tests/TestResults/coverage-report/index.html
 ```
 
 Le rapport sera disponible dans `BlazorGame.Tests/TestResults/coverage-report/index.html`.
