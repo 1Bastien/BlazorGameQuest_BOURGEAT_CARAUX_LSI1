@@ -39,6 +39,16 @@ Trois comptes sont pré-configurés dans Keycloak avec des IDs fixes :
 
 Les comptes `user1` et `user2` sont automatiquement créés dans la base de données au démarrage avec des parties de démonstration. Les IDs Keycloak correspondent exactement aux IDs dans la base de données, ce qui permet au middleware `UserSyncMiddleware` de reconnaître les utilisateurs existants au lieu d'en créer de nouveaux.
 
+### Configuration automatique
+
+**Keycloak** est configuré automatiquement au démarrage via Docker Compose. Le realm et les utilisateurs de test sont importés depuis le fichier `Keycloak/realm-export.json`.
+
+**Base de données** : Un seeder (`GameDbContextSeeder`) s'exécute automatiquement au démarrage pour initialiser la base de données avec des données de démonstration (utilisateurs, modèles de salles, configuration des récompenses).
+
+**Synchronisation des utilisateurs** : Les utilisateurs créés dans Keycloak sont automatiquement synchronisés avec la base de données in-memory lors de leur première connexion au jeu. Le middleware `UserSyncMiddleware` détecte les nouveaux utilisateurs Keycloak et les crée dans la base de données avec leur ID Keycloak lié, permettant ainsi de sauvegarder leurs parties et leurs scores.
+
+**Créer un nouveau joueur** : Pour ajouter un nouveau joueur au jeu, il suffit de le créer dans Keycloak via l'Admin Console. À sa première connexion, il sera automatiquement créé dans la base de données et pourra commencer à jouer.
+
 ## Description du projet
 
 Le joueur explore un nombre aléatoire de salles générées automatiquement.
