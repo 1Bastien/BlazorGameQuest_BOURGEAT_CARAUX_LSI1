@@ -91,7 +91,6 @@ La gateway utilise **YARP (Yet Another Reverse Proxy)** pour router les requête
 - `/classement` : Scores des joueurs
 - `/history` : Historique des parties
 - `/admin-dashboard` : Dashboard admin
-- `/account`: Mon compte
 
 Notre frontend est organisé en trois dossiers principaux :
 
