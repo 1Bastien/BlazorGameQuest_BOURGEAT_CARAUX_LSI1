@@ -113,6 +113,10 @@ Notre frontend est organisé en trois dossiers principaux :
 Les tests sont implémentés avec xUnit, Moq et une base de données InMemory. Le projet de tests atteint **93%** de couverture de code (hors composants et pages Blazor).
 Les tests sont organisés en plusieurs catégories :
 
+**Test d'intégration** :
+
+- **FullGameIntegrationTests** : tests d'intégration complets du flux de jeu, vérifiant l'enchaînement des actions et la cohérence globale du Core.
+
 **Tests Core (BlazorGame.Core)** :
 
 - **GameSessionServiceTests** : création, mise à jour et abandon de sessions, gestion des états de jeu
@@ -120,7 +124,6 @@ Les tests sont organisés en plusieurs catégories :
 - **RoomTemplateServiceTests** : opérations CRUD sur les modèles de salles
 - **GameRewardsServiceTests** : récupération et mise à jour de la configuration des récompenses
 - **UserSyncMiddlewareTests** : synchronisation automatique des utilisateurs Keycloak
-- **FullGameIntegrationTests** : tests d'intégration complets du flux de jeu
 - **GameSessionsControllerTests** : tests des endpoints de gestion des sessions
 - **GameActionsControllerTests** : tests des endpoints de gestion des actions de jeu
 - **GameRewardsControllerTests** : tests des endpoints de configuration des récompenses
